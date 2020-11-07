@@ -1,8 +1,8 @@
-import {defer, isXml, parse} from "./core";
+import { defer, isXml, parse } from "./core";
 import Path from "./path";
 
 function request(url, type, withCredentials, headers) {
-	var supportsURL = (typeof window != "undefined") ? window.URL : false; // TODO: fallback for url if window isn't defined
+	var supportsURL = typeof window != "undefined" ? window.URL : false; // TODO: fallback for url if window isn't defined
 	var BLOB_RESPONSE = supportsURL ? "blob" : "arraybuffer";
 
 	var deferred = new defer();
@@ -18,11 +18,11 @@ function request(url, type, withCredentials, headers) {
 	if (!("overrideMimeType" in xhrPrototype)) {
 		// IE10 might have response, but not overrideMimeType
 		Object.defineProperty(xhrPrototype, "overrideMimeType", {
-			value: function xmlHttpRequestOverrideMimeType() {}
+			value: function xmlHttpRequestOverrideMimeType() {},
 		});
 	}
 
-	if(withCredentials) {
+	if (withCredentials) {
 		xhr.withCredentials = true;
 	}
 
@@ -31,38 +31,37 @@ function request(url, type, withCredentials, headers) {
 
 	xhr.open("GET", url, true);
 
-	for(header in headers) {
+	for (header in headers) {
 		xhr.setRequestHeader(header, headers[header]);
 	}
 
-	if(type == "json") {
+	if (type == "json") {
 		xhr.setRequestHeader("Accept", "application/json");
 	}
 
 	// If type isn"t set, determine it from the file extension
-	if(!type) {
+	if (!type) {
 		type = new Path(url).extension;
 	}
 
-	if(type == "blob"){
+	if (type == "blob") {
 		xhr.responseType = BLOB_RESPONSE;
 	}
 
-
-	if(isXml(type)) {
+	if (isXml(type)) {
 		// xhr.responseType = "document";
 		xhr.overrideMimeType("text/xml"); // for OPF parsing
 	}
 
-	if(type == "xhtml") {
+	if (type == "xhtml") {
 		// xhr.responseType = "document";
 	}
 
-	if(type == "html" || type == "htm") {
+	if (type == "html" || type == "htm") {
 		// xhr.responseType = "document";
 	}
 
-	if(type == "binary") {
+	if (type == "binary") {
 		xhr.responseType = "arraybuffer";
 	}
 
@@ -76,18 +75,19 @@ function request(url, type, withCredentials, headers) {
 		if (this.readyState === XMLHttpRequest.DONE) {
 			var responseXML = false;
 
-			if(this.responseType === "" || this.responseType === "document") {
+			if (this.responseType === "" || this.responseType === "document") {
 				responseXML = this.responseXML;
 			}
 
-			if (this.status === 200 || this.status === 0 || responseXML) { //-- Firefox is reporting 0 for blob urls
+			if (this.status === 200 || this.status === 0 || responseXML) {
+				//-- Firefox is reporting 0 for blob urls
 				var r;
 
 				if (!this.response && !responseXML) {
 					deferred.reject({
 						status: this.status,
-						message : "Empty Response",
-						stack : new Error().stack
+						message: "Empty Response",
+						stack: new Error().stack,
 					});
 					return deferred.promise;
 				}
@@ -96,50 +96,41 @@ function request(url, type, withCredentials, headers) {
 					deferred.reject({
 						status: this.status,
 						response: this.response,
-						message : "Forbidden",
-						stack : new Error().stack
+						message: "Forbidden",
+						stack: new Error().stack,
 					});
 					return deferred.promise;
 				}
-				if(responseXML){
+				if (responseXML) {
 					r = this.responseXML;
-				} else
-				if(isXml(type)){
+				} else if (isXml(type)) {
 					// xhr.overrideMimeType("text/xml"); // for OPF parsing
 					// If this.responseXML wasn't set, try to parse using a DOMParser from text
 					r = parse(this.response, "text/xml");
-				}else
-				if(type == "xhtml"){
+				} else if (type == "xhtml") {
 					r = parse(this.response, "application/xhtml+xml");
-				}else
-				if(type == "html" || type == "htm"){
+				} else if (type == "html" || type == "htm") {
 					r = parse(this.response, "text/html");
-				}else
-				if(type == "json"){
+				} else if (type == "json") {
 					r = JSON.parse(this.response);
-				}else
-				if(type == "blob"){
-
-					if(supportsURL) {
+				} else if (type == "blob") {
+					if (supportsURL) {
 						r = this.response;
 					} else {
 						//-- Safari doesn't support responseType blob, so create a blob from arraybuffer
 						r = new Blob([this.response]);
 					}
-
-				}else{
+				} else {
 					r = this.response;
 				}
 
 				deferred.resolve(r);
 			} else {
-
 				deferred.reject({
 					status: this.status,
-					message : this.response,
-					stack : new Error().stack
+					message: this.response,
+					stack: new Error().stack,
 				});
-
 			}
 		}
 	}

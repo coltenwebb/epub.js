@@ -10,9 +10,9 @@ import { nodeBounds } from "./utils/core";
  * @param {boolean} [dev] toggle developer highlighting
  */
 class Mapping {
-	constructor(layout, direction, axis, dev=false) {
+	constructor(layout, direction, axis, dev = false) {
 		this.layout = layout;
-		this.horizontal = (axis === "horizontal") ? true : false;
+		this.horizontal = axis === "horizontal" ? true : false;
 		this.direction = direction || "ltr";
 		this._dev = dev;
 	}
@@ -44,7 +44,7 @@ class Mapping {
 
 		result = this.rangePairToCfiPair(cfiBase, {
 			start: this.findStart(root, start, end),
-			end: this.findEnd(root, start, end)
+			end: this.findEnd(root, start, end),
 		});
 
 		if (this._dev === true) {
@@ -74,38 +74,43 @@ class Mapping {
 		// IE11 has strange issue, if root is text node IE throws exception on
 		// calling treeWalker.nextNode(), saying
 		// Unexpected call to method or property access instead of returing null value
-		if(root && root.nodeType === Node.TEXT_NODE) {
+		if (root && root.nodeType === Node.TEXT_NODE) {
 			return;
 		}
 		// safeFilter is required so that it can work in IE as filter is a function for IE
 		// and for other browser filter is an object.
 		var filter = {
-			acceptNode: function(node) {
+			acceptNode: function (node) {
 				if (node.data.trim().length > 0) {
 					return NodeFilter.FILTER_ACCEPT;
 				} else {
 					return NodeFilter.FILTER_REJECT;
 				}
-			}
+			},
 		};
 		var safeFilter = filter.acceptNode;
 		safeFilter.acceptNode = filter.acceptNode;
 
-		var treeWalker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, safeFilter, false);
+		var treeWalker = document.createTreeWalker(
+			root,
+			NodeFilter.SHOW_TEXT,
+			safeFilter,
+			false
+		);
 		var node;
 		var result;
 		while ((node = treeWalker.nextNode())) {
 			result = func(node);
-			if(result) break;
+			if (result) break;
 		}
 
 		return result;
 	}
 
-	findRanges(view){
+	findRanges(view) {
 		var columns = [];
 		var scrollWidth = view.contents.scrollWidth();
-		var spreads = Math.ceil( scrollWidth / this.layout.spreadWidth);
+		var spreads = Math.ceil(scrollWidth / this.layout.spreadWidth);
 		var count = spreads * this.layout.divisor;
 		var columnWidth = this.layout.columnWidth;
 		var gap = this.layout.gap;
@@ -113,10 +118,10 @@ class Mapping {
 
 		for (var i = 0; i < count.pages; i++) {
 			start = (columnWidth + gap) * i;
-			end = (columnWidth * (i+1)) + (gap * i);
+			end = columnWidth * (i + 1) + gap * i;
 			columns.push({
 				start: this.findStart(view.document.body, start, end),
-				end: this.findEnd(view.document.body, start, end)
+				end: this.findEnd(view.document.body, start, end),
 			});
 		}
 
@@ -131,14 +136,13 @@ class Mapping {
 	 * @param {number} end position to end at
 	 * @return {Range}
 	 */
-	findStart(root, start, end){
+	findStart(root, start, end) {
 		var stack = [root];
 		var $el;
 		var found;
 		var $prev = root;
 
 		while (stack.length) {
-
 			$el = stack.shift();
 
 			found = this.walk($el, (node) => {
@@ -146,15 +150,13 @@ class Mapping {
 				var elPos;
 				var elRange;
 
-
 				elPos = nodeBounds(node);
 
 				if (this.horizontal && this.direction === "ltr") {
-
 					left = this.horizontal ? elPos.left : elPos.top;
 					right = this.horizontal ? elPos.right : elPos.bottom;
 
-					if( left >= start && left <= end ) {
+					if (left >= start && left <= end) {
 						return node;
 					} else if (right > start) {
 						return node;
@@ -162,13 +164,11 @@ class Mapping {
 						$prev = node;
 						stack.push(node);
 					}
-
 				} else if (this.horizontal && this.direction === "rtl") {
-
 					left = elPos.left;
 					right = elPos.right;
 
-					if( right <= end && right >= start ) {
+					if (right <= end && right >= start) {
 						return node;
 					} else if (left < end) {
 						return node;
@@ -176,13 +176,11 @@ class Mapping {
 						$prev = node;
 						stack.push(node);
 					}
-
 				} else {
-
 					top = elPos.top;
 					bottom = elPos.bottom;
 
-					if( top >= start && top <= end ) {
+					if (top >= start && top <= end) {
 						return node;
 					} else if (bottom > start) {
 						return node;
@@ -190,16 +188,12 @@ class Mapping {
 						$prev = node;
 						stack.push(node);
 					}
-
 				}
-
-
 			});
 
-			if(found) {
+			if (found) {
 				return this.findTextStartRange(found, start, end);
 			}
-
 		}
 
 		// Return last element
@@ -214,18 +208,16 @@ class Mapping {
 	 * @param {number} end position to end at
 	 * @return {Range}
 	 */
-	findEnd(root, start, end){
+	findEnd(root, start, end) {
 		var stack = [root];
 		var $el;
 		var $prev = root;
 		var found;
 
 		while (stack.length) {
-
 			$el = stack.shift();
 
 			found = this.walk($el, (node) => {
-
 				var left, right, top, bottom;
 				var elPos;
 				var elRange;
@@ -233,56 +225,47 @@ class Mapping {
 				elPos = nodeBounds(node);
 
 				if (this.horizontal && this.direction === "ltr") {
-
 					left = Math.round(elPos.left);
 					right = Math.round(elPos.right);
 
-					if(left > end && $prev) {
+					if (left > end && $prev) {
 						return $prev;
-					} else if(right > end) {
+					} else if (right > end) {
 						return node;
 					} else {
 						$prev = node;
 						stack.push(node);
 					}
-
 				} else if (this.horizontal && this.direction === "rtl") {
-
 					left = Math.round(this.horizontal ? elPos.left : elPos.top);
 					right = Math.round(this.horizontal ? elPos.right : elPos.bottom);
 
-					if(right < start && $prev) {
+					if (right < start && $prev) {
 						return $prev;
-					} else if(left < start) {
+					} else if (left < start) {
 						return node;
 					} else {
 						$prev = node;
 						stack.push(node);
 					}
-
 				} else {
-
 					top = Math.round(elPos.top);
 					bottom = Math.round(elPos.bottom);
 
-					if(top > end && $prev) {
+					if (top > end && $prev) {
 						return $prev;
-					} else if(bottom > end) {
+					} else if (bottom > end) {
 						return node;
 					} else {
 						$prev = node;
 						stack.push(node);
 					}
-
 				}
-
 			});
 
-
-			if(found){
+			if (found) {
 				return this.findTextEndRange(found, start, end);
 			}
-
 		}
 
 		// end of chapter
@@ -297,7 +280,7 @@ class Mapping {
 	 * @param {number} end position to end at
 	 * @return {Range}
 	 */
-	findTextStartRange(node, start, end){
+	findTextStartRange(node, start, end) {
 		var ranges = this.splitTextNodeIntoRanges(node);
 		var range;
 		var pos;
@@ -309,30 +292,23 @@ class Mapping {
 			pos = range.getBoundingClientRect();
 
 			if (this.horizontal && this.direction === "ltr") {
-
 				left = pos.left;
-				if( left >= start ) {
+				if (left >= start) {
 					return range;
 				}
-
 			} else if (this.horizontal && this.direction === "rtl") {
-
 				right = pos.right;
-				if( right <= end ) {
+				if (right <= end) {
 					return range;
 				}
-
 			} else {
-
 				top = pos.top;
-				if( top >= start ) {
+				if (top >= start) {
 					return range;
 				}
-
 			}
 
 			// prev = range;
-
 		}
 
 		return ranges[0];
@@ -346,7 +322,7 @@ class Mapping {
 	 * @param {number} end position to end at
 	 * @return {Range}
 	 */
-	findTextEndRange(node, start, end){
+	findTextEndRange(node, start, end) {
 		var ranges = this.splitTextNodeIntoRanges(node);
 		var prev;
 		var range;
@@ -359,48 +335,39 @@ class Mapping {
 			pos = range.getBoundingClientRect();
 
 			if (this.horizontal && this.direction === "ltr") {
-
 				left = pos.left;
 				right = pos.right;
 
-				if(left > end && prev) {
+				if (left > end && prev) {
 					return prev;
-				} else if(right > end) {
+				} else if (right > end) {
 					return range;
 				}
-
 			} else if (this.horizontal && this.direction === "rtl") {
-
-				left = pos.left
+				left = pos.left;
 				right = pos.right;
 
-				if(right < start && prev) {
+				if (right < start && prev) {
 					return prev;
-				} else if(left < start) {
+				} else if (left < start) {
 					return range;
 				}
-
 			} else {
-
 				top = pos.top;
 				bottom = pos.bottom;
 
-				if(top > end && prev) {
+				if (top > end && prev) {
 					return prev;
-				} else if(bottom > end) {
+				} else if (bottom > end) {
 					return range;
 				}
-
 			}
 
-
 			prev = range;
-
 		}
 
 		// Ends before limit
-		return ranges[ranges.length-1];
-
+		return ranges[ranges.length - 1];
 	}
 
 	/**
@@ -410,7 +377,7 @@ class Mapping {
 	 * @param {string} [_splitter] what to split on
 	 * @return {Range[]}
 	 */
-	splitTextNodeIntoRanges(node, _splitter){
+	splitTextNodeIntoRanges(node, _splitter) {
 		var ranges = [];
 		var textContent = node.textContent || "";
 		var text = textContent.trim();
@@ -420,7 +387,7 @@ class Mapping {
 
 		var pos = text.indexOf(splitter);
 
-		if(pos === -1 || node.nodeType != Node.TEXT_NODE) {
+		if (pos === -1 || node.nodeType != Node.TEXT_NODE) {
 			range = doc.createRange();
 			range.selectNodeContents(node);
 			return [range];
@@ -432,29 +399,26 @@ class Mapping {
 		ranges.push(range);
 		range = false;
 
-		while ( pos != -1 ) {
-
+		while (pos != -1) {
 			pos = text.indexOf(splitter, pos + 1);
-			if(pos > 0) {
-
-				if(range) {
+			if (pos > 0) {
+				if (range) {
 					range.setEnd(node, pos);
 					ranges.push(range);
 				}
 
 				range = doc.createRange();
-				range.setStart(node, pos+1);
+				range.setStart(node, pos + 1);
 			}
 		}
 
-		if(range) {
+		if (range) {
 			range.setEnd(node, text.length);
 			ranges.push(range);
 		}
 
 		return ranges;
 	}
-
 
 	/**
 	 * Turn a pair of ranges into a pair of CFIs
@@ -463,8 +427,7 @@ class Mapping {
 	 * @param {object} rangePair { start: Range, end: Range }
 	 * @return {object} { start: "epubcfi(...)", end: "epubcfi(...)" }
 	 */
-	rangePairToCfiPair(cfiBase, rangePair){
-
+	rangePairToCfiPair(cfiBase, rangePair) {
 		var startRange = rangePair.start;
 		var endRange = rangePair.end;
 
@@ -476,12 +439,11 @@ class Mapping {
 
 		return {
 			start: startCfi,
-			end: endCfi
+			end: endCfi,
 		};
-
 	}
 
-	rangeListToCfiList(cfiBase, columns){
+	rangeListToCfiList(cfiBase, columns) {
 		var map = [];
 		var cifPair;
 
@@ -489,7 +451,6 @@ class Mapping {
 			cifPair = this.rangePairToCfiPair(cfiBase, columns[i]);
 
 			map.push(cifPair);
-
 		}
 
 		return map;
@@ -502,7 +463,7 @@ class Mapping {
 	 */
 	axis(axis) {
 		if (axis) {
-			this.horizontal = (axis === "horizontal") ? true : false;
+			this.horizontal = axis === "horizontal" ? true : false;
 		}
 		return this.horizontal;
 	}

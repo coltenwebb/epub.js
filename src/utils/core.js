@@ -1,7 +1,7 @@
 /**
  * Core Utilities and Helpers
  * @module Core
-*/
+ */
 import { DOMParser as XMLDOMParser } from "xmldom";
 
 /**
@@ -9,12 +9,23 @@ import { DOMParser as XMLDOMParser } from "xmldom";
  * @returns {function} requestAnimationFrame
  * @memberof Core
  */
-export const requestAnimationFrame = (typeof window != "undefined") ? (window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame) : false;
+export const requestAnimationFrame =
+	typeof window != "undefined"
+		? window.requestAnimationFrame ||
+		  window.mozRequestAnimationFrame ||
+		  window.webkitRequestAnimationFrame ||
+		  window.msRequestAnimationFrame
+		: false;
 const ELEMENT_NODE = 1;
 const TEXT_NODE = 3;
 const COMMENT_NODE = 8;
 const DOCUMENT_NODE = 9;
-const _URL = typeof URL != "undefined" ? URL : (typeof window != "undefined" ? (window.URL || window.webkitURL || window.mozURL) : undefined);
+const _URL =
+	typeof URL != "undefined"
+		? URL
+		: typeof window != "undefined"
+		? window.URL || window.webkitURL || window.mozURL
+		: undefined;
 
 /**
  * Generates a UUID
@@ -24,10 +35,12 @@ const _URL = typeof URL != "undefined" ? URL : (typeof window != "undefined" ? (
  */
 export function uuid() {
 	var d = new Date().getTime();
-	var uuid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
-		var r = (d + Math.random()*16)%16 | 0;
-		d = Math.floor(d/16);
-		return (c=="x" ? r : (r&0x7|0x8)).toString(16);
+	var uuid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (
+		c
+	) {
+		var r = (d + Math.random() * 16) % 16 | 0;
+		d = Math.floor(d / 16);
+		return (c == "x" ? r : (r & 0x7) | 0x8).toString(16);
 	});
 	return uuid;
 }
@@ -39,11 +52,11 @@ export function uuid() {
  */
 export function documentHeight() {
 	return Math.max(
-			document.documentElement.clientHeight,
-			document.body.scrollHeight,
-			document.documentElement.scrollHeight,
-			document.body.offsetHeight,
-			document.documentElement.offsetHeight
+		document.documentElement.clientHeight,
+		document.body.scrollHeight,
+		document.documentElement.scrollHeight,
+		document.body.offsetHeight,
+		document.documentElement.offsetHeight
 	);
 }
 
@@ -92,17 +105,20 @@ export function isFloat(n) {
  * @memberof Core
  */
 export function prefixed(unprefixed) {
-	var vendors = ["Webkit", "webkit", "Moz", "O", "ms" ];
+	var vendors = ["Webkit", "webkit", "Moz", "O", "ms"];
 	var prefixes = ["-webkit-", "-webkit-", "-moz-", "-o-", "-ms-"];
 	var lower = unprefixed.toLowerCase();
 	var length = vendors.length;
 
-	if (typeof(document) === "undefined" || typeof(document.body.style[lower]) != "undefined") {
+	if (
+		typeof document === "undefined" ||
+		typeof document.body.style[lower] != "undefined"
+	) {
 		return unprefixed;
 	}
 
 	for (var i = 0; i < length; i++) {
-		if (typeof(document.body.style[prefixes[i] + lower]) != "undefined") {
+		if (typeof document.body.style[prefixes[i] + lower] != "undefined") {
 			return prefixes[i] + lower;
 		}
 	}
@@ -135,9 +151,13 @@ export function defaults(obj) {
 export function extend(target) {
 	var sources = [].slice.call(arguments, 1);
 	sources.forEach(function (source) {
-		if(!source) return;
-		Object.getOwnPropertyNames(source).forEach(function(propName) {
-			Object.defineProperty(target, propName, Object.getOwnPropertyDescriptor(source, propName));
+		if (!source) return;
+		Object.getOwnPropertyNames(source).forEach(function (propName) {
+			Object.defineProperty(
+				target,
+				propName,
+				Object.getOwnPropertyDescriptor(source, propName)
+			);
 		});
 	});
 	return target;
@@ -174,27 +194,27 @@ export function locationOf(item, array, compareFunction, _start, _end) {
 	var end = _end || array.length;
 	var pivot = parseInt(start + (end - start) / 2);
 	var compared;
-	if(!compareFunction){
-		compareFunction = function(a, b) {
-			if(a > b) return 1;
-			if(a < b) return -1;
-			if(a == b) return 0;
+	if (!compareFunction) {
+		compareFunction = function (a, b) {
+			if (a > b) return 1;
+			if (a < b) return -1;
+			if (a == b) return 0;
 		};
 	}
-	if(end-start <= 0) {
+	if (end - start <= 0) {
 		return pivot;
 	}
 
 	compared = compareFunction(array[pivot], item);
-	if(end-start === 1) {
+	if (end - start === 1) {
 		return compared >= 0 ? pivot : pivot + 1;
 	}
-	if(compared === 0) {
+	if (compared === 0) {
 		return pivot;
 	}
-	if(compared === -1) {
+	if (compared === -1) {
 		return locationOf(item, array, compareFunction, pivot, end);
-	} else{
+	} else {
 		return locationOf(item, array, compareFunction, start, pivot);
 	}
 }
@@ -215,27 +235,27 @@ export function indexOfSorted(item, array, compareFunction, _start, _end) {
 	var end = _end || array.length;
 	var pivot = parseInt(start + (end - start) / 2);
 	var compared;
-	if(!compareFunction){
-		compareFunction = function(a, b) {
-			if(a > b) return 1;
-			if(a < b) return -1;
-			if(a == b) return 0;
+	if (!compareFunction) {
+		compareFunction = function (a, b) {
+			if (a > b) return 1;
+			if (a < b) return -1;
+			if (a == b) return 0;
 		};
 	}
-	if(end-start <= 0) {
+	if (end - start <= 0) {
 		return -1; // Not found
 	}
 
 	compared = compareFunction(array[pivot], item);
-	if(end-start === 1) {
+	if (end - start === 1) {
 		return compared === 0 ? pivot : -1;
 	}
-	if(compared === 0) {
+	if (compared === 0) {
 		return pivot; // Found
 	}
-	if(compared === -1) {
+	if (compared === -1) {
 		return indexOfSorted(item, array, compareFunction, pivot, end);
-	} else{
+	} else {
 		return indexOfSorted(item, array, compareFunction, start, pivot);
 	}
 }
@@ -247,27 +267,41 @@ export function indexOfSorted(item, array, compareFunction, _start, _end) {
  * @memberof Core
  */
 export function bounds(el) {
-
 	var style = window.getComputedStyle(el);
-	var widthProps = ["width", "paddingRight", "paddingLeft", "marginRight", "marginLeft", "borderRightWidth", "borderLeftWidth"];
-	var heightProps = ["height", "paddingTop", "paddingBottom", "marginTop", "marginBottom", "borderTopWidth", "borderBottomWidth"];
+	var widthProps = [
+		"width",
+		"paddingRight",
+		"paddingLeft",
+		"marginRight",
+		"marginLeft",
+		"borderRightWidth",
+		"borderLeftWidth",
+	];
+	var heightProps = [
+		"height",
+		"paddingTop",
+		"paddingBottom",
+		"marginTop",
+		"marginBottom",
+		"borderTopWidth",
+		"borderBottomWidth",
+	];
 
 	var width = 0;
 	var height = 0;
 
-	widthProps.forEach(function(prop){
+	widthProps.forEach(function (prop) {
 		width += parseFloat(style[prop]) || 0;
 	});
 
-	heightProps.forEach(function(prop){
+	heightProps.forEach(function (prop) {
 		height += parseFloat(style[prop]) || 0;
 	});
 
 	return {
 		height: height,
-		width: width
+		width: width,
 	};
-
 }
 
 /**
@@ -278,27 +312,39 @@ export function bounds(el) {
  * @memberof Core
  */
 export function borders(el) {
-
 	var style = window.getComputedStyle(el);
-	var widthProps = ["paddingRight", "paddingLeft", "marginRight", "marginLeft", "borderRightWidth", "borderLeftWidth"];
-	var heightProps = ["paddingTop", "paddingBottom", "marginTop", "marginBottom", "borderTopWidth", "borderBottomWidth"];
+	var widthProps = [
+		"paddingRight",
+		"paddingLeft",
+		"marginRight",
+		"marginLeft",
+		"borderRightWidth",
+		"borderLeftWidth",
+	];
+	var heightProps = [
+		"paddingTop",
+		"paddingBottom",
+		"marginTop",
+		"marginBottom",
+		"borderTopWidth",
+		"borderBottomWidth",
+	];
 
 	var width = 0;
 	var height = 0;
 
-	widthProps.forEach(function(prop){
+	widthProps.forEach(function (prop) {
 		width += parseFloat(style[prop]) || 0;
 	});
 
-	heightProps.forEach(function(prop){
+	heightProps.forEach(function (prop) {
 		height += parseFloat(style[prop]) || 0;
 	});
 
 	return {
 		height: height,
-		width: width
+		width: width,
 	};
-
 }
 
 /**
@@ -311,7 +357,7 @@ export function borders(el) {
 export function nodeBounds(node) {
 	let elPos;
 	let doc = node.ownerDocument;
-	if(node.nodeType == Node.TEXT_NODE){
+	if (node.nodeType == Node.TEXT_NODE) {
 		let elRange = doc.createRange();
 		elRange.selectNodeContents(node);
 		elPos = elRange.getBoundingClientRect();
@@ -327,7 +373,6 @@ export function nodeBounds(node) {
  * @memberof Core
  */
 export function windowBounds() {
-
 	var width = window.innerWidth;
 	var height = window.innerHeight;
 
@@ -337,9 +382,8 @@ export function windowBounds() {
 		right: width,
 		bottom: height,
 		width: width,
-		height: height
+		height: height,
 	};
-
 }
 
 /**
@@ -402,8 +446,8 @@ export function isXml(ext) {
  * @returns {Blob}
  * @memberof Core
  */
-export function createBlob(content, mime){
-	return new Blob([content], {type : mime });
+export function createBlob(content, mime) {
+	return new Blob([content], { type: mime });
 }
 
 /**
@@ -413,7 +457,7 @@ export function createBlob(content, mime){
  * @returns {string} url
  * @memberof Core
  */
-export function createBlobUrl(content, mime){
+export function createBlobUrl(content, mime) {
 	var tempUrl;
 	var blob = createBlob(content, mime);
 
@@ -427,7 +471,7 @@ export function createBlobUrl(content, mime){
  * @param {string} url
  * @memberof Core
  */
-export function revokeBlobUrl(url){
+export function revokeBlobUrl(url) {
 	return _URL.revokeObjectURL(url);
 }
 
@@ -438,11 +482,11 @@ export function revokeBlobUrl(url){
  * @returns {string} url
  * @memberof Core
  */
-export function createBase64Url(content, mime){
+export function createBase64Url(content, mime) {
 	var data;
 	var datauri;
 
-	if (typeof(content) !== "string") {
+	if (typeof content !== "string") {
 		// Only handles strings
 		return;
 	}
@@ -460,7 +504,7 @@ export function createBase64Url(content, mime){
  * @returns {string} type
  * @memberof Core
  */
-export function type(obj){
+export function type(obj) {
 	return Object.prototype.toString.call(obj).slice(8, -1);
 }
 
@@ -484,7 +528,7 @@ export function parse(markup, mime, forceXMLDom) {
 
 	// Remove byte order mark before parsing
 	// https://www.w3.org/International/questions/qa-byte-order-mark
-	if(markup.charCodeAt(0) === 0xFEFF) {
+	if (markup.charCodeAt(0) === 0xfeff) {
 		markup = markup.slice(1);
 	}
 
@@ -524,7 +568,6 @@ export function qs(el, sel) {
  * @memberof Core
  */
 export function qsa(el, sel) {
-
 	if (typeof el.querySelector != "undefined") {
 		return el.querySelectorAll(sel);
 	} else {
@@ -551,9 +594,9 @@ export function qsp(el, sel, props) {
 		return el.querySelector(sel);
 	} else {
 		q = el.getElementsByTagName(sel);
-		filtered = Array.prototype.slice.call(q, 0).filter(function(el) {
+		filtered = Array.prototype.slice.call(q, 0).filter(function (el) {
 			for (var prop in props) {
-				if(el.getAttribute(prop) === props[prop]){
+				if (el.getAttribute(prop) === props[prop]) {
 					return true;
 				}
 			}
@@ -574,14 +617,19 @@ export function qsp(el, sel, props) {
  */
 export function sprint(root, func) {
 	var doc = root.ownerDocument || root;
-	if (typeof(doc.createTreeWalker) !== "undefined") {
+	if (typeof doc.createTreeWalker !== "undefined") {
 		treeWalker(root, func, NodeFilter.SHOW_TEXT);
 	} else {
-		walk(root, function(node) {
-			if (node && node.nodeType === 3) { // Node.TEXT_NODE
-				func(node);
-			}
-		}, true);
+		walk(
+			root,
+			function (node) {
+				if (node && node.nodeType === 3) {
+					// Node.TEXT_NODE
+					func(node);
+				}
+			},
+			true
+		);
 	}
 }
 
@@ -605,19 +653,19 @@ export function treeWalker(root, func, filter) {
  * @param {node} node
  * @param {callback} return false for continue,true for break inside callback
  */
-export function walk(node,callback){
-	if(callback(node)){
+export function walk(node, callback) {
+	if (callback(node)) {
 		return true;
 	}
 	node = node.firstChild;
-	if(node){
-		do{
-			let walked = walk(node,callback);
-			if(walked){
+	if (node) {
+		do {
+			let walked = walk(node, callback);
+			if (walked) {
 				return true;
 			}
 			node = node.nextSibling;
-		} while(node);
+		} while (node);
 	}
 }
 
@@ -628,15 +676,14 @@ export function walk(node,callback){
  * @memberof Core
  */
 export function blob2base64(blob) {
-	return new Promise(function(resolve, reject) {
+	return new Promise(function (resolve, reject) {
 		var reader = new FileReader();
 		reader.readAsDataURL(blob);
-		reader.onloadend = function() {
+		reader.onloadend = function () {
 			resolve(reader.result);
 		};
 	});
 }
-
 
 /**
  * Creates a new pending promise and provides methods to resolve or reject it.
@@ -682,17 +729,20 @@ export function defer() {
  * @returns {element[]} elements
  * @memberof Core
  */
-export function querySelectorByType(html, element, type){
+export function querySelectorByType(html, element, type) {
 	var query;
 	if (typeof html.querySelector != "undefined") {
 		query = html.querySelector(`${element}[*|type="${type}"]`);
 	}
 	// Handle IE not supporting namespaced epub:type in querySelector
-	if(!query || query.length === 0) {
+	if (!query || query.length === 0) {
 		query = qsa(html, element);
 		for (var i = 0; i < query.length; i++) {
-			if(query[i].getAttributeNS("http://www.idpf.org/2007/ops", "type") === type ||
-				 query[i].getAttribute("epub:type") === type) {
+			if (
+				query[i].getAttributeNS("http://www.idpf.org/2007/ops", "type") ===
+					type ||
+				query[i].getAttribute("epub:type") === type
+			) {
 				return query[i];
 			}
 		}
@@ -730,7 +780,7 @@ export function parents(node) {
 	for (; node; node = node.parentNode) {
 		nodes.unshift(node);
 	}
-	return nodes
+	return nodes;
 }
 
 /**
@@ -768,7 +818,7 @@ export function filterChildren(el, nodeName, single) {
  */
 export function getParentByTagName(node, tagname) {
 	let parent;
-	if (node === null || tagname === '') return;
+	if (node === null || tagname === "") return;
 	parent = node.parentNode;
 	while (parent.nodeType === 1) {
 		if (parent.tagName.toLowerCase() === tagname) {
@@ -842,8 +892,10 @@ export class RangeObject {
 
 	selectNodeContents(referenceNode) {
 		let end = referenceNode.childNodes[referenceNode.childNodes - 1];
-		let endIndex = (referenceNode.nodeType === 3) ?
-				referenceNode.textContent.length : parent.childNodes.length;
+		let endIndex =
+			referenceNode.nodeType === 3
+				? referenceNode.textContent.length
+				: parent.childNodes.length;
 		this.setStart(referenceNode, 0);
 		this.setEnd(referenceNode, endIndex);
 	}
@@ -862,8 +914,10 @@ export class RangeObject {
 	}
 
 	_checkCollapsed() {
-		if (this.startContainer === this.endContainer &&
-				this.startOffset === this.endOffset) {
+		if (
+			this.startContainer === this.endContainer &&
+			this.startOffset === this.endOffset
+		) {
 			this.collapsed = true;
 		} else {
 			this.collapsed = false;

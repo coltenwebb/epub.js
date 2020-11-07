@@ -8,7 +8,7 @@ export default function scrollType() {
 	if (definer.scrollLeft > 0) {
 		type = "default";
 	} else {
-		if (typeof Element !== 'undefined' && Element.prototype.scrollIntoView) {
+		if (typeof Element !== "undefined" && Element.prototype.scrollIntoView) {
 			definer.children[0].children[1].scrollIntoView();
 			if (definer.scrollLeft < 0) {
 				type = "negative";
@@ -26,8 +26,8 @@ export default function scrollType() {
 }
 
 export function createDefiner() {
-	var definer = document.createElement('div');
-	definer.dir="rtl";
+	var definer = document.createElement("div");
+	definer.dir = "rtl";
 
 	definer.style.position = "fixed";
 	definer.style.width = "1px";
@@ -36,14 +36,14 @@ export function createDefiner() {
 	definer.style.left = "0px";
 	definer.style.overflow = "hidden";
 
-	var innerDiv = document.createElement('div');
+	var innerDiv = document.createElement("div");
 	innerDiv.style.width = "2px";
 
-	var spanA = document.createElement('span');
+	var spanA = document.createElement("span");
 	spanA.style.width = "1px";
 	spanA.style.display = "inline-block";
 
-	var spanB = document.createElement('span');
+	var spanB = document.createElement("span");
 	spanB.style.width = "1px";
 	spanB.style.display = "inline-block";
 

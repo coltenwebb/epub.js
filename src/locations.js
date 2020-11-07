@@ -1,4 +1,4 @@
-import {qs, sprint, locationOf, defer} from "./utils/core";
+import { qs, sprint, locationOf, defer } from "./utils/core";
 import Queue from "./utils/queue";
 import EpubCFI from "./epubcfi";
 import { EVENTS } from "./utils/constants";
@@ -29,8 +29,8 @@ class Locations {
 
 		this._wordCounter = 0;
 
-		this.currentLocation = '';
-		this._currentCfi ='';
+		this.currentLocation = "";
+		this._currentCfi = "";
 		this.processingTimeout = undefined;
 	}
 
@@ -40,55 +40,59 @@ class Locations {
 	 * @return {object} locations
 	 */
 	generate(chars) {
-
 		if (chars) {
 			this.break = chars;
 		}
 
 		this.q.pause();
 
-		this.spine.each(function(section) {
-			if (section.linear) {
-				this.q.enqueue(this.process.bind(this), section);
-			}
-		}.bind(this));
+		this.spine.each(
+			function (section) {
+				if (section.linear) {
+					this.q.enqueue(this.process.bind(this), section);
+				}
+			}.bind(this)
+		);
 
-		return this.q.run().then(function() {
-			this.total = this._locations.length - 1;
+		return this.q.run().then(
+			function () {
+				this.total = this._locations.length - 1;
 
-			if (this._currentCfi) {
-				this.currentLocation = this._currentCfi;
-			}
+				if (this._currentCfi) {
+					this.currentLocation = this._currentCfi;
+				}
 
-			return this._locations;
-			// console.log(this.percentage(this.book.rendition.location.start), this.percentage(this.book.rendition.location.end));
-		}.bind(this));
-
+				return this._locations;
+				// console.log(this.percentage(this.book.rendition.location.start), this.percentage(this.book.rendition.location.end));
+			}.bind(this)
+		);
 	}
 
-	createRange () {
+	createRange() {
 		return {
 			startContainer: undefined,
 			startOffset: undefined,
 			endContainer: undefined,
-			endOffset: undefined
+			endOffset: undefined,
 		};
 	}
 
 	process(section) {
-
-		return section.load(this.request)
-			.then(function(contents) {
+		return section.load(this.request).then(
+			function (contents) {
 				var completed = new defer();
 				var locations = this.parse(contents, section.cfiBase);
 				this._locations = this._locations.concat(locations);
 
 				section.unload();
 
-				this.processingTimeout = setTimeout(() => completed.resolve(locations), this.pause);
+				this.processingTimeout = setTimeout(
+					() => completed.resolve(locations),
+					this.pause
+				);
 				return completed.promise;
-			}.bind(this));
-
+			}.bind(this)
+		);
 	}
 
 	parse(contents, cfiBase, chars) {
@@ -99,7 +103,7 @@ class Locations {
 		var counter = 0;
 		var prev;
 		var _break = chars || this.break;
-		var parser = function(node) {
+		var parser = function (node) {
 			var len = node.length;
 			var dist;
 			var pos = 0;
@@ -119,11 +123,10 @@ class Locations {
 
 			// Node is smaller than a break,
 			// skip over it
-			if(dist > len){
+			if (dist > len) {
 				counter += len;
 				pos = len;
 			}
-
 
 			while (pos < len) {
 				dist = _break - counter;
@@ -139,12 +142,12 @@ class Locations {
 				// pos += dist;
 
 				// Gone over
-				if(pos + dist >= len){
+				if (pos + dist >= len) {
 					// Continue counter for next node
 					counter += len - pos;
 					// break
 					pos = len;
-				// At End
+					// At End
 				} else {
 					// Advance pos
 					pos += dist;
@@ -175,7 +178,6 @@ class Locations {
 		return locations;
 	}
 
-
 	/**
 	 * Load all of sections in the book to generate locations
 	 * @param  {string} startCfi start position
@@ -189,26 +191,41 @@ class Locations {
 		this._locationsWords = [];
 		this._wordCounter = 0;
 
-		this.spine.each(function(section) {
-			if (section.linear) {
-				if (start) {
-					if (section.index >= start.spinePos) {
-						this.q.enqueue(this.processWords.bind(this), section, wordCount, start, count);
+		this.spine.each(
+			function (section) {
+				if (section.linear) {
+					if (start) {
+						if (section.index >= start.spinePos) {
+							this.q.enqueue(
+								this.processWords.bind(this),
+								section,
+								wordCount,
+								start,
+								count
+							);
+						}
+					} else {
+						this.q.enqueue(
+							this.processWords.bind(this),
+							section,
+							wordCount,
+							start,
+							count
+						);
 					}
-				} else {
-					this.q.enqueue(this.processWords.bind(this), section, wordCount, start, count);
 				}
-			}
-		}.bind(this));
+			}.bind(this)
+		);
 
-		return this.q.run().then(function() {
-			if (this._currentCfi) {
-				this.currentLocation = this._currentCfi;
-			}
+		return this.q.run().then(
+			function () {
+				if (this._currentCfi) {
+					this.currentLocation = this._currentCfi;
+				}
 
-			return this._locationsWords;
-		}.bind(this));
-
+				return this._locationsWords;
+			}.bind(this)
+		);
 	}
 
 	processWords(section, wordCount, startCfi, count) {
@@ -216,24 +233,32 @@ class Locations {
 			return Promise.resolve();
 		}
 
-		return section.load(this.request)
-			.then(function(contents) {
+		return section.load(this.request).then(
+			function (contents) {
 				var completed = new defer();
 				var locations = this.parseWords(contents, section, wordCount, startCfi);
 				var remainingCount = count - this._locationsWords.length;
-				this._locationsWords = this._locationsWords.concat(locations.length >= count ? locations.slice(0, remainingCount) : locations);
+				this._locationsWords = this._locationsWords.concat(
+					locations.length >= count
+						? locations.slice(0, remainingCount)
+						: locations
+				);
 
 				section.unload();
 
-				this.processingTimeout = setTimeout(() => completed.resolve(locations), this.pause);
+				this.processingTimeout = setTimeout(
+					() => completed.resolve(locations),
+					this.pause
+				);
 				return completed.promise;
-			}.bind(this));
+			}.bind(this)
+		);
 	}
 
 	//http://stackoverflow.com/questions/18679576/counting-words-in-string
 	countWords(s) {
-		s = s.replace(/(^\s*)|(\s*$)/gi, "");//exclude  start and end white-space
-		s = s.replace(/[ ]{2,}/gi, " ");//2 or more space to 1
+		s = s.replace(/(^\s*)|(\s*$)/gi, ""); //exclude  start and end white-space
+		s = s.replace(/[ ]{2,}/gi, " "); //2 or more space to 1
 		s = s.replace(/\n /, "\n"); // exclude newline with a start spacing
 		return s.split(" ").length;
 	}
@@ -248,9 +273,14 @@ class Locations {
 		var foundStartNode = startCfi ? startCfi.spinePos !== section.index : true;
 		var startNode;
 		if (startCfi && section.index === startCfi.spinePos) {
-			startNode = startCfi.findNode(startCfi.range ? startCfi.path.steps.concat(startCfi.start.steps) : startCfi.path.steps, contents.ownerDocument);
+			startNode = startCfi.findNode(
+				startCfi.range
+					? startCfi.path.steps.concat(startCfi.start.steps)
+					: startCfi.path.steps,
+				contents.ownerDocument
+			);
 		}
-		var parser = function(node) {
+		var parser = function (node) {
 			if (!foundStartNode) {
 				if (node === startNode) {
 					foundStartNode = true;
@@ -263,7 +293,7 @@ class Locations {
 					return false;
 				}
 			}
-			var len  = this.countWords(node.textContent);
+			var len = this.countWords(node.textContent);
 			var dist;
 			var pos = 0;
 
@@ -279,7 +309,6 @@ class Locations {
 				this._wordCounter += len;
 				pos = len;
 			}
-
 
 			while (pos < len) {
 				dist = _break - this._wordCounter;
@@ -313,13 +342,13 @@ class Locations {
 	 * @param {EpubCFI} cfi
 	 * @return {number}
 	 */
-	locationFromCfi(cfi){
+	locationFromCfi(cfi) {
 		let loc;
 		if (EpubCFI.prototype.isCfiString(cfi)) {
 			cfi = new EpubCFI(cfi);
 		}
 		// Check if the location has not been set yet
-		if(this._locations.length === 0) {
+		if (this._locations.length === 0) {
 			return -1;
 		}
 
@@ -338,7 +367,7 @@ class Locations {
 	 * @return {number}
 	 */
 	percentageFromCfi(cfi) {
-		if(this._locations.length === 0) {
+		if (this._locations.length === 0) {
 			return null;
 		}
 		// Find closest cfi
@@ -357,7 +386,7 @@ class Locations {
 			return 0;
 		}
 
-		return (loc / this.total);
+		return loc / this.total;
 	}
 
 	/**
@@ -365,14 +394,14 @@ class Locations {
 	 * @param {number} loc
 	 * @return {EpubCFI} cfi
 	 */
-	cfiFromLocation(loc){
+	cfiFromLocation(loc) {
 		var cfi = -1;
 		// check that pg is an int
-		if(typeof loc != "number"){
+		if (typeof loc != "number") {
 			loc = parseInt(loc);
 		}
 
-		if(loc >= 0 && loc < this._locations.length) {
+		if (loc >= 0 && loc < this._locations.length) {
 			cfi = this._locations[loc];
 		}
 
@@ -384,7 +413,7 @@ class Locations {
 	 * @param {number} percentage
 	 * @return {EpubCFI} cfi
 	 */
-	cfiFromPercentage(percentage){
+	cfiFromPercentage(percentage) {
 		let loc;
 		if (percentage > 1) {
 			console.warn("Normalize cfiFromPercentage value to between 0 - 1");
@@ -405,7 +434,7 @@ class Locations {
 	 * Load locations from JSON
 	 * @param {json} locations
 	 */
-	load(locations){
+	load(locations) {
 		if (typeof locations === "string") {
 			this._locations = JSON.parse(locations);
 		} else {
@@ -419,18 +448,18 @@ class Locations {
 	 * Save locations to JSON
 	 * @return {json}
 	 */
-	save(){
+	save() {
 		return JSON.stringify(this._locations);
 	}
 
-	getCurrent(){
+	getCurrent() {
 		return this._current;
 	}
 
-	setCurrent(curr){
+	setCurrent(curr) {
 		var loc;
 
-		if(typeof curr == "string"){
+		if (typeof curr == "string") {
 			this._currentCfi = curr;
 		} else if (typeof curr == "number") {
 			this._current = curr;
@@ -438,11 +467,11 @@ class Locations {
 			return;
 		}
 
-		if(this._locations.length === 0) {
+		if (this._locations.length === 0) {
 			return;
 		}
 
-		if(typeof curr == "string"){
+		if (typeof curr == "string") {
 			loc = this.locationFromCfi(curr);
 			this._current = loc;
 		} else {
@@ -450,7 +479,7 @@ class Locations {
 		}
 
 		this.emit(EVENTS.LOCATIONS.CHANGED, {
-			percentage: this.percentageFromLocation(loc)
+			percentage: this.percentageFromLocation(loc),
 		});
 	}
 
@@ -471,11 +500,11 @@ class Locations {
 	/**
 	 * Locations length
 	 */
-	length () {
+	length() {
 		return this._locations.length;
 	}
 
-	destroy () {
+	destroy() {
 		this.spine = undefined;
 		this.request = undefined;
 		this.pause = undefined;
@@ -484,7 +513,7 @@ class Locations {
 		this.q = undefined;
 		this.epubcfi = undefined;
 
-		this._locations = undefined
+		this._locations = undefined;
 		this.total = undefined;
 
 		this.break = undefined;

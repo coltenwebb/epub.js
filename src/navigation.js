@@ -1,4 +1,10 @@
-import {qs, qsa, querySelectorByType, filterChildren, getParentByTagName} from "./utils/core";
+import {
+	qs,
+	qsa,
+	querySelectorByType,
+	filterChildren,
+	getParentByTagName,
+} from "./utils/core";
 
 /**
  * Navigation Parser
@@ -35,10 +41,10 @@ class Navigation {
 
 		if (!isXml) {
 			this.toc = this.load(xml);
-		} else if(html) {
+		} else if (html) {
 			this.toc = this.parseNav(xml);
 			this.landmarks = this.parseLandmarks(xml);
-		} else if(ncx){
+		} else if (ncx) {
 			this.toc = this.parseNcx(xml);
 		}
 
@@ -72,7 +78,6 @@ class Navigation {
 				this.unpack(item.subitems);
 			}
 		}
-
 	}
 
 	/**
@@ -83,13 +88,13 @@ class Navigation {
 	get(target) {
 		var index;
 
-		if(!target) {
+		if (!target) {
 			return this.toc;
 		}
 
-		if(target.indexOf("#") === 0) {
+		if (target.indexOf("#") === 0) {
 			index = this.tocById[target.substring(1)];
-		} else if(target in this.tocByHref){
+		} else if (target in this.tocByHref) {
 			index = this.tocByHref[target];
 		}
 
@@ -132,7 +137,7 @@ class Navigation {
 	landmark(type) {
 		var index;
 
-		if(!type) {
+		if (!type) {
 			return this.landmarks;
 		}
 
@@ -147,7 +152,7 @@ class Navigation {
 	 * @param  {document} navHtml
 	 * @return {array} navigation list
 	 */
-	parseNav(navHtml){
+	parseNav(navHtml) {
 		var navElement = querySelectorByType(navHtml, "nav", "toc");
 		var navItems = navElement ? qsa(navElement, "li") : [];
 		var length = navItems.length;
@@ -156,13 +161,13 @@ class Navigation {
 		var list = [];
 		var item, parent;
 
-		if(!navItems || length === 0) return list;
+		if (!navItems || length === 0) return list;
 
 		for (i = 0; i < length; ++i) {
 			item = this.navItem(navItems[i]);
 			if (item) {
 				toc[item.id] = item;
-				if(!item.parent) {
+				if (!item.parent) {
 					list.push(item);
 				} else {
 					parent = toc[item.parent];
@@ -180,7 +185,7 @@ class Navigation {
 	 * @param  {element} item
 	 * @return {object} navItem
 	 */
-	navItem(item){
+	navItem(item) {
 		let id = item.getAttribute("id") || undefined;
 		let content = filterChildren(item, "a", true);
 
@@ -189,7 +194,7 @@ class Navigation {
 		}
 
 		let src = content.getAttribute("href") || "";
-		
+
 		if (!id) {
 			id = src;
 		}
@@ -203,7 +208,7 @@ class Navigation {
 			if (!parent) {
 				const parentContent = filterChildren(parentItem, "a", true);
 				parent = parentContent && parentContent.getAttribute("href");
-      			}
+			}
 		}
 
 		while (!parent && parentItem) {
@@ -212,17 +217,17 @@ class Navigation {
 				parent = parentItem.getAttribute("id");
 				if (!parent) {
 					const parentContent = filterChildren(parentItem, "a", true);
-          				parent = parentContent && parentContent.getAttribute("href");
-        			}
+					parent = parentContent && parentContent.getAttribute("href");
+				}
 			}
 		}
 
 		return {
-			"id": id,
-			"href": src,
-			"label": text,
-			"subitems" : subitems,
-			"parent" : parent
+			id: id,
+			href: src,
+			label: text,
+			subitems: subitems,
+			parent: parent,
 		};
 	}
 
@@ -232,7 +237,7 @@ class Navigation {
 	 * @param  {document} navHtml
 	 * @return {array} landmarks list
 	 */
-	parseLandmarks(navHtml){
+	parseLandmarks(navHtml) {
 		var navElement = querySelectorByType(navHtml, "nav", "landmarks");
 		var navItems = navElement ? qsa(navElement, "li") : [];
 		var length = navItems.length;
@@ -240,7 +245,7 @@ class Navigation {
 		var list = [];
 		var item;
 
-		if(!navItems || length === 0) return list;
+		if (!navItems || length === 0) return list;
 
 		for (i = 0; i < length; ++i) {
 			item = this.landmarkItem(navItems[i]);
@@ -259,21 +264,23 @@ class Navigation {
 	 * @param  {element} item
 	 * @return {object} landmarkItem
 	 */
-	landmarkItem(item){
+	landmarkItem(item) {
 		let content = filterChildren(item, "a", true);
 
 		if (!content) {
 			return;
 		}
 
-		let type = content.getAttributeNS("http://www.idpf.org/2007/ops", "type") || undefined;
+		let type =
+			content.getAttributeNS("http://www.idpf.org/2007/ops", "type") ||
+			undefined;
 		let href = content.getAttribute("href") || "";
 		let text = content.textContent || "";
 
 		return {
-			"href": href,
-			"label": text,
-			"type" : type
+			href: href,
+			label: text,
+			type: type,
 		};
 	}
 
@@ -283,7 +290,7 @@ class Navigation {
 	 * @param  {document} navHtml
 	 * @return {array} navigation list
 	 */
-	parseNcx(tocXml){
+	parseNcx(tocXml) {
 		var navPoints = qsa(tocXml, "navPoint");
 		var length = navPoints.length;
 		var i;
@@ -291,12 +298,12 @@ class Navigation {
 		var list = [];
 		var item, parent;
 
-		if(!navPoints || length === 0) return list;
+		if (!navPoints || length === 0) return list;
 
 		for (i = 0; i < length; ++i) {
 			item = this.ncxItem(navPoints[i]);
 			toc[item.id] = item;
-			if(!item.parent) {
+			if (!item.parent) {
 				list.push(item);
 			} else {
 				parent = toc[item.parent];
@@ -313,27 +320,30 @@ class Navigation {
 	 * @param  {element} item
 	 * @return {object} ncxItem
 	 */
-	ncxItem(item){
+	ncxItem(item) {
 		var id = item.getAttribute("id") || false,
-				content = qs(item, "content"),
-				src = content.getAttribute("src"),
-				navLabel = qs(item, "navLabel"),
-				text = navLabel.textContent ? navLabel.textContent : "",
-				subitems = [],
-				parentNode = item.parentNode,
-				parent;
+			content = qs(item, "content"),
+			src = content.getAttribute("src"),
+			navLabel = qs(item, "navLabel"),
+			text = navLabel.textContent ? navLabel.textContent : "",
+			subitems = [],
+			parentNode = item.parentNode,
+			parent;
 
-		if(parentNode && (parentNode.nodeName === "navPoint" || parentNode.nodeName.split(':').slice(-1)[0] === "navPoint")) {
+		if (
+			parentNode &&
+			(parentNode.nodeName === "navPoint" ||
+				parentNode.nodeName.split(":").slice(-1)[0] === "navPoint")
+		) {
 			parent = parentNode.getAttribute("id");
 		}
 
-
 		return {
-			"id": id,
-			"href": src,
-			"label": text,
-			"subitems" : subitems,
-			"parent" : parent
+			id: id,
+			href: src,
+			label: text,
+			subitems: subitems,
+			parent: parent,
 		};
 	}
 
@@ -343,7 +353,7 @@ class Navigation {
 	 * @return {Array} navItems
 	 */
 	load(json) {
-		return json.map(item => {
+		return json.map((item) => {
 			item.label = item.title;
 			item.subitems = item.children ? this.load(item.children) : [];
 			return item;

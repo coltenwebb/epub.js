@@ -1,19 +1,31 @@
 import EventEmitter from "event-emitter";
-import {extend, borders, uuid, isNumber, bounds, defer, qs, parse} from "../../utils/core";
+import {
+	extend,
+	borders,
+	uuid,
+	isNumber,
+	bounds,
+	defer,
+	qs,
+	parse,
+} from "../../utils/core";
 import EpubCFI from "../../epubcfi";
 import Contents from "../../contents";
 import { EVENTS } from "../../utils/constants";
 
 class InlineView {
 	constructor(section, options) {
-		this.settings = extend({
-			ignoreClass : "",
-			axis: "vertical",
-			width: 0,
-			height: 0,
-			layout: undefined,
-			globalLayoutProperties: {},
-		}, options || {});
+		this.settings = extend(
+			{
+				ignoreClass: "",
+				axis: "vertical",
+				width: 0,
+				height: 0,
+				layout: undefined,
+				globalLayoutProperties: {},
+			},
+			options || {}
+		);
 
 		this.id = "epubjs-view:" + uuid();
 		this.section = section;
@@ -25,10 +37,10 @@ class InlineView {
 		this.displayed = false;
 		this.rendered = false;
 
-		this.width  = this.settings.width;
+		this.width = this.settings.width;
 		this.height = this.settings.height;
 
-		this.fixedWidth  = 0;
+		this.fixedWidth = 0;
 		this.fixedHeight = 0;
 
 		// Blank Cfi for Parsing
@@ -37,7 +49,6 @@ class InlineView {
 		this.layout = this.settings.layout;
 		// Dom events to listen for
 		// this.listenedEvents = ["keydown", "keyup", "keypressed", "mouseup", "mousedown", "click", "touchend", "touchstart"];
-
 	}
 
 	container(axis) {
@@ -55,7 +66,7 @@ class InlineView {
 
 		element.style.overflow = "hidden";
 
-		if(axis && axis == "horizontal"){
+		if (axis && axis == "horizontal") {
 			element.style.display = "inline-block";
 		} else {
 			element.style.display = "block";
@@ -65,12 +76,11 @@ class InlineView {
 	}
 
 	create() {
-
-		if(this.frame) {
+		if (this.frame) {
 			return this.frame;
 		}
 
-		if(!this.element) {
+		if (!this.element) {
 			this.element = this.createContainer();
 		}
 
@@ -86,7 +96,7 @@ class InlineView {
 		this.element.style.visibility = "hidden";
 		this.frame.style.visibility = "hidden";
 
-		if(this.settings.axis === "horizontal") {
+		if (this.settings.axis === "horizontal") {
 			this.frame.style.width = "auto";
 			this.frame.style.height = "0";
 		} else {
@@ -106,7 +116,6 @@ class InlineView {
 	}
 
 	render(request, show) {
-
 		// view.onLayout = this.layout.format.bind(this.layout);
 		this.create();
 
@@ -114,48 +123,56 @@ class InlineView {
 		this.size();
 
 		// Render Chain
-		return this.section.render(request)
-			.then(function(contents){
-				return this.load(contents);
-			}.bind(this))
-			// .then(function(doc){
-			// 	return this.hooks.content.trigger(view, this);
-			// }.bind(this))
-			.then(function(){
-				// this.settings.layout.format(view.contents);
-				// return this.hooks.layout.trigger(view, this);
-			}.bind(this))
-			// .then(function(){
-			// 	return this.display();
-			// }.bind(this))
-			// .then(function(){
-			// 	return this.hooks.render.trigger(view, this);
-			// }.bind(this))
-			.then(function(){
+		return (
+			this.section
+				.render(request)
+				.then(
+					function (contents) {
+						return this.load(contents);
+					}.bind(this)
+				)
+				// .then(function(doc){
+				// 	return this.hooks.content.trigger(view, this);
+				// }.bind(this))
+				.then(
+					function () {
+						// this.settings.layout.format(view.contents);
+						// return this.hooks.layout.trigger(view, this);
+					}.bind(this)
+				)
+				// .then(function(){
+				// 	return this.display();
+				// }.bind(this))
+				// .then(function(){
+				// 	return this.hooks.render.trigger(view, this);
+				// }.bind(this))
+				.then(
+					function () {
+						// apply the layout function to the contents
+						this.settings.layout.format(this.contents);
 
-				// apply the layout function to the contents
-				this.settings.layout.format(this.contents);
+						// Expand the iframe to the full size of the content
+						// this.expand();
 
-				// Expand the iframe to the full size of the content
-				// this.expand();
+						// Listen for events that require an expansion of the iframe
+						this.addListeners();
 
-				// Listen for events that require an expansion of the iframe
-				this.addListeners();
-
-				if(show !== false) {
-					//this.q.enqueue(function(view){
-					this.show();
-					//}, view);
-				}
-				// this.map = new Map(view, this.layout);
-				//this.hooks.show.trigger(view, this);
-				this.emit(EVENTS.VIEWS.RENDERED, this.section);
-
-			}.bind(this))
-			.catch(function(e){
-				this.emit(EVENTS.VIEWS.LOAD_ERROR, e);
-			}.bind(this));
-
+						if (show !== false) {
+							//this.q.enqueue(function(view){
+							this.show();
+							//}, view);
+						}
+						// this.map = new Map(view, this.layout);
+						//this.hooks.show.trigger(view, this);
+						this.emit(EVENTS.VIEWS.RENDERED, this.section);
+					}.bind(this)
+				)
+				.catch(
+					function (e) {
+						this.emit(EVENTS.VIEWS.LOAD_ERROR, e);
+					}.bind(this)
+				)
+		);
 	}
 
 	// Determine locks base on settings
@@ -163,15 +180,14 @@ class InlineView {
 		var width = _width || this.settings.width;
 		var height = _height || this.settings.height;
 
-		if(this.layout.name === "pre-paginated") {
+		if (this.layout.name === "pre-paginated") {
 			// TODO: check if these are different than the size set in chapter
 			this.lock("both", width, height);
-		} else if(this.settings.axis === "horizontal") {
+		} else if (this.settings.axis === "horizontal") {
 			this.lock("height", width, height);
 		} else {
 			this.lock("width", width, height);
 		}
-
 	}
 
 	// Lock an axis to element dimensions, taking borders into account
@@ -179,32 +195,28 @@ class InlineView {
 		var elBorders = borders(this.element);
 		var iframeBorders;
 
-		if(this.frame) {
+		if (this.frame) {
 			iframeBorders = borders(this.frame);
 		} else {
-			iframeBorders = {width: 0, height: 0};
+			iframeBorders = { width: 0, height: 0 };
 		}
 
-		if(what == "width" && isNumber(width)){
+		if (what == "width" && isNumber(width)) {
 			this.lockedWidth = width - elBorders.width - iframeBorders.width;
 			this.resize(this.lockedWidth, false); //  width keeps ratio correct
 		}
 
-		if(what == "height" && isNumber(height)){
+		if (what == "height" && isNumber(height)) {
 			this.lockedHeight = height - elBorders.height - iframeBorders.height;
 			this.resize(false, this.lockedHeight);
 		}
 
-		if(what === "both" &&
-				isNumber(width) &&
-				isNumber(height)){
-
+		if (what === "both" && isNumber(width) && isNumber(height)) {
 			this.lockedWidth = width - elBorders.width - iframeBorders.width;
 			this.lockedHeight = height - elBorders.height - iframeBorders.height;
 
 			this.resize(this.lockedWidth, this.lockedHeight);
 		}
-
 	}
 
 	// Resize a single axis based on content dimensions
@@ -214,21 +226,21 @@ class InlineView {
 
 		var textWidth, textHeight;
 
-		if(!this.frame || this._expanding) return;
+		if (!this.frame || this._expanding) return;
 
 		this._expanding = true;
 
 		// Expand Horizontally
-		if(this.settings.axis === "horizontal") {
+		if (this.settings.axis === "horizontal") {
 			width = this.contentWidth(textWidth);
 		} // Expand Vertically
-		else if(this.settings.axis === "vertical") {
+		else if (this.settings.axis === "vertical") {
 			height = this.contentHeight(textHeight);
 		}
 
 		// Only Resize if dimensions have changed or
 		// if Frame is still hidden, so needs reframing
-		if(this._needsReframe || width != this._width || height != this._height){
+		if (this._needsReframe || width != this._width || height != this._height) {
 			this.resize(width, height);
 		}
 
@@ -243,17 +255,15 @@ class InlineView {
 		return this.frame.scrollHeight;
 	}
 
-
 	resize(width, height) {
+		if (!this.frame) return;
 
-		if(!this.frame) return;
-
-		if(isNumber(width)){
+		if (isNumber(width)) {
 			this.frame.style.width = width + "px";
 			this._width = width;
 		}
 
-		if(isNumber(height)){
+		if (isNumber(height)) {
 			this.frame.style.height = height + "px";
 			this._height = height;
 		}
@@ -272,9 +282,7 @@ class InlineView {
 		this.onResize(this, size);
 
 		this.emit(EVENTS.VIEWS.RESIZED, size);
-
 	}
-
 
 	load(contents) {
 		var loading = new defer();
@@ -309,14 +317,12 @@ class InlineView {
 
 		loading.resolve(this.contents);
 
-
 		return loaded;
 	}
 
 	setLayout(layout) {
 		this.layout = layout;
 	}
-
 
 	resizeListenters() {
 		// Test size again
@@ -336,31 +342,27 @@ class InlineView {
 		var displayed = new defer();
 
 		if (!this.displayed) {
+			this.render(request).then(
+				function () {
+					this.emit(EVENTS.VIEWS.DISPLAYED, this);
+					this.onDisplayed(this);
 
-			this.render(request).then(function () {
+					this.displayed = true;
 
-				this.emit(EVENTS.VIEWS.DISPLAYED, this);
-				this.onDisplayed(this);
-
-				this.displayed = true;
-
-				displayed.resolve(this);
-
-			}.bind(this));
-
+					displayed.resolve(this);
+				}.bind(this)
+			);
 		} else {
 			displayed.resolve(this);
 		}
-
 
 		return displayed.promise;
 	}
 
 	show() {
-
 		this.element.style.visibility = "visible";
 
-		if(this.frame){
+		if (this.frame) {
 			this.frame.style.visibility = "visible";
 		}
 
@@ -385,8 +387,8 @@ class InlineView {
 		var targetPos = this.contents.locationOf(target, this.settings.ignoreClass);
 
 		return {
-			"left": window.scrollX + parentPos.left + targetPos.left,
-			"top": window.scrollY + parentPos.top + targetPos.top
+			left: window.scrollX + parentPos.left + targetPos.left,
+			top: window.scrollY + parentPos.top + targetPos.top,
 		};
 	}
 
@@ -399,15 +401,14 @@ class InlineView {
 	}
 
 	bounds() {
-		if(!this.elementBounds) {
+		if (!this.elementBounds) {
 			this.elementBounds = bounds(this.element);
 		}
 		return this.elementBounds;
 	}
 
 	destroy() {
-
-		if(this.displayed){
+		if (this.displayed) {
 			this.displayed = false;
 
 			this.removeListeners();

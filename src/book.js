@@ -1,5 +1,5 @@
 import EventEmitter from "event-emitter";
-import {extend, defer} from "./utils/core";
+import { extend, defer } from "./utils/core";
 import Url from "./utils/url";
 import Path from "./utils/path";
 import Spine from "./spine";
@@ -18,7 +18,8 @@ import DisplayOptions from "./displayoptions";
 import { EPUBJS_VERSION, EVENTS } from "./utils/constants";
 
 const CONTAINER_PATH = "META-INF/container.xml";
-const IBOOKS_DISPLAY_OPTIONS_PATH = "META-INF/com.apple.ibooks.display-options.xml";
+const IBOOKS_DISPLAY_OPTIONS_PATH =
+	"META-INF/com.apple.ibooks.display-options.xml";
 
 const INPUT_TYPE = {
 	BINARY: "binary",
@@ -26,7 +27,7 @@ const INPUT_TYPE = {
 	EPUB: "epub",
 	OPF: "opf",
 	MANIFEST: "json",
-	DIRECTORY: "directory"
+	DIRECTORY: "directory",
 };
 
 /**
@@ -50,10 +51,12 @@ const INPUT_TYPE = {
 class Book {
 	constructor(url, options) {
 		// Allow passing just options to the Book
-		if (typeof(options) === "undefined" &&
-			  typeof(url) !== "string" &&
-		    url instanceof Blob === false &&
-		    url instanceof ArrayBuffer === false) {
+		if (
+			typeof options === "undefined" &&
+			typeof url !== "string" &&
+			url instanceof Blob === false &&
+			url instanceof ArrayBuffer === false
+		) {
 			options = url;
 			url = undefined;
 		}
@@ -66,11 +69,10 @@ class Book {
 			replacements: undefined,
 			canonical: undefined,
 			openAs: undefined,
-			store: undefined
+			store: undefined,
 		});
 
 		extend(this.settings, options);
-
 
 		// Promises
 		this.opening = new defer();
@@ -89,7 +91,7 @@ class Book {
 			navigation: new defer(),
 			pageList: new defer(),
 			resources: new defer(),
-			displayOptions: new defer()
+			displayOptions: new defer(),
 		};
 
 		this.loaded = {
@@ -100,7 +102,7 @@ class Book {
 			navigation: this.loading.navigation.promise,
 			pageList: this.loading.pageList.promise,
 			resources: this.loading.resources.promise,
-			displayOptions: this.loading.displayOptions.promise
+			displayOptions: this.loading.displayOptions.promise,
 		};
 
 		/**
@@ -115,9 +117,8 @@ class Book {
 			this.loaded.cover,
 			this.loaded.navigation,
 			this.loaded.resources,
-			this.loaded.displayOptions
+			this.loaded.displayOptions,
 		]);
-
 
 		// Queue for methods used before opening
 		this.isRendered = false;
@@ -229,9 +230,9 @@ class Book {
 			this.store(this.settings.store);
 		}
 
-		if(url) {
+		if (url) {
 			this.open(url, this.settings.openAs).catch((error) => {
-				var err = new Error("Cannot load book at "+ url );
+				var err = new Error("Cannot load book at " + url);
 				this.emit(EVENTS.BOOK.OPEN_FAILED, err);
 			});
 		}
@@ -259,18 +260,23 @@ class Book {
 		} else if (type === INPUT_TYPE.EPUB) {
 			this.archived = true;
 			this.url = new Url("/", "");
-			opening = this.request(input, "binary", this.settings.requestCredentials, this.settings.requestHeaders)
-				.then(this.openEpub.bind(this));
-		} else if(type == INPUT_TYPE.OPF) {
+			opening = this.request(
+				input,
+				"binary",
+				this.settings.requestCredentials,
+				this.settings.requestHeaders
+			).then(this.openEpub.bind(this));
+		} else if (type == INPUT_TYPE.OPF) {
 			this.url = new Url(input);
 			opening = this.openPackaging(this.url.Path.toString());
-		} else if(type == INPUT_TYPE.MANIFEST) {
+		} else if (type == INPUT_TYPE.MANIFEST) {
 			this.url = new Url(input);
 			opening = this.openManifest(this.url.Path.toString());
 		} else {
 			this.url = new Url(input);
-			opening = this.openContainer(CONTAINER_PATH)
-				.then(this.openPackaging.bind(this));
+			opening = this.openContainer(CONTAINER_PATH).then(
+				this.openPackaging.bind(this)
+			);
 		}
 
 		return opening;
@@ -300,11 +306,10 @@ class Book {
 	 * @return {string} packagePath
 	 */
 	openContainer(url) {
-		return this.load(url)
-			.then((xml) => {
-				this.container = new Container(xml);
-				return this.resolve(this.container.packagePath);
-			});
+		return this.load(url).then((xml) => {
+			this.container = new Container(xml);
+			return this.resolve(this.container.packagePath);
+		});
 	}
 
 	/**
@@ -315,11 +320,10 @@ class Book {
 	 */
 	openPackaging(url) {
 		this.path = new Path(url);
-		return this.load(url)
-			.then((xml) => {
-				this.packaging = new Packaging(xml);
-				return this.unpack(this.packaging);
-			});
+		return this.load(url).then((xml) => {
+			this.packaging = new Packaging(xml);
+			return this.unpack(this.packaging);
+		});
 	}
 
 	/**
@@ -330,12 +334,11 @@ class Book {
 	 */
 	openManifest(url) {
 		this.path = new Path(url);
-		return this.load(url)
-			.then((json) => {
-				this.packaging = new Packaging();
-				this.packaging.load(json);
-				return this.unpack(this.packaging);
-			});
+		return this.load(url).then((json) => {
+			this.packaging = new Packaging();
+			this.packaging.load(json);
+			return this.unpack(this.packaging);
+		});
 	}
 
 	/**
@@ -345,10 +348,15 @@ class Book {
 	 */
 	load(path) {
 		var resolved = this.resolve(path);
-		if(this.archived) {
+		if (this.archived) {
 			return this.archive.request(resolved);
 		} else {
-			return this.request(resolved, null, this.settings.requestCredentials, this.settings.requestHeaders);
+			return this.request(
+				resolved,
+				null,
+				this.settings.requestCredentials,
+				this.settings.requestHeaders
+			);
 		}
 	}
 
@@ -363,7 +371,7 @@ class Book {
 			return;
 		}
 		var resolved = path;
-		var isAbsolute = (path.indexOf("://") > -1);
+		var isAbsolute = path.indexOf("://") > -1;
 
 		if (isAbsolute) {
 			return path;
@@ -373,7 +381,7 @@ class Book {
 			resolved = this.path.resolve(path);
 		}
 
-		if(absolute != false && this.url) {
+		if (absolute != false && this.url) {
 			resolved = this.url.resolve(resolved);
 		}
 
@@ -416,7 +424,7 @@ class Book {
 			return INPUT_TYPE.BASE64;
 		}
 
-		if(typeof(input) != "string") {
+		if (typeof input != "string") {
 			return INPUT_TYPE.BINARY;
 		}
 
@@ -433,19 +441,18 @@ class Book {
 			return INPUT_TYPE.DIRECTORY;
 		}
 
-		if(extension === "epub"){
+		if (extension === "epub") {
 			return INPUT_TYPE.EPUB;
 		}
 
-		if(extension === "opf"){
+		if (extension === "opf") {
 			return INPUT_TYPE.OPF;
 		}
 
-		if(extension === "json"){
+		if (extension === "json") {
 			return INPUT_TYPE.MANIFEST;
 		}
 	}
-
 
 	/**
 	 * unpack the contents of the Books packaging
@@ -457,25 +464,32 @@ class Book {
 
 		if (this.packaging.metadata.layout === "") {
 			// rendition:layout not set - check display options if book is pre-paginated
-			this.load(this.url.resolve(IBOOKS_DISPLAY_OPTIONS_PATH)).then((xml) => {
-				this.displayOptions = new DisplayOptions(xml);
-				this.loading.displayOptions.resolve(this.displayOptions);
-			}).catch((err) => {
-				this.displayOptions = new DisplayOptions();
-				this.loading.displayOptions.resolve(this.displayOptions);
-			});
+			this.load(this.url.resolve(IBOOKS_DISPLAY_OPTIONS_PATH))
+				.then((xml) => {
+					this.displayOptions = new DisplayOptions(xml);
+					this.loading.displayOptions.resolve(this.displayOptions);
+				})
+				.catch((err) => {
+					this.displayOptions = new DisplayOptions();
+					this.loading.displayOptions.resolve(this.displayOptions);
+				});
 		} else {
 			this.displayOptions = new DisplayOptions();
 			this.loading.displayOptions.resolve(this.displayOptions);
 		}
 
-		this.spine.unpack(this.packaging, this.resolve.bind(this), this.canonical.bind(this));
+		this.spine.unpack(
+			this.packaging,
+			this.resolve.bind(this),
+			this.canonical.bind(this)
+		);
 
 		this.resources = new Resources(this.packaging.manifest, {
 			archive: this.archive,
 			resolver: this.resolve.bind(this),
 			request: this.request.bind(this),
-			replacements: this.settings.replacements || (this.archived ? "blobUrl" : "base64")
+			replacements:
+				this.settings.replacements || (this.archived ? "blobUrl" : "base64"),
 		});
 
 		this.loadNavigation(this.packaging).then(() => {
@@ -496,22 +510,25 @@ class Book {
 
 		this.isOpen = true;
 
-		if(this.archived || this.settings.replacements && this.settings.replacements != "none") {
-			this.replacements().then(() => {
-				this.loaded.displayOptions.then(() => {
-					this.opening.resolve(this);
+		if (
+			this.archived ||
+			(this.settings.replacements && this.settings.replacements != "none")
+		) {
+			this.replacements()
+				.then(() => {
+					this.loaded.displayOptions.then(() => {
+						this.opening.resolve(this);
+					});
+				})
+				.catch((err) => {
+					console.error(err);
 				});
-			})
-			.catch((err) => {
-				console.error(err);
-			});
 		} else {
 			// Resolve book opened promise
 			this.loaded.displayOptions.then(() => {
 				this.opening.resolve(this);
 			});
 		}
-
 	}
 
 	/**
@@ -545,12 +562,11 @@ class Book {
 			});
 		}
 
-		return this.load(navPath, "xml")
-			.then((xml) => {
-				this.navigation = new Navigation(xml);
-				this.pageList = new PageList(xml);
-				return this.navigation;
-			});
+		return this.load(navPath, "xml").then((xml) => {
+			this.navigation = new Navigation(xml);
+			this.pageList = new PageList(xml);
+			return this.navigation;
+		});
 	}
 
 	/**
@@ -613,7 +629,8 @@ class Book {
 	 */
 	store(name) {
 		// Use "blobUrl" or "base64" for replacements
-		let replacementsSetting = this.settings.replacements && this.settings.replacements !== "none";
+		let replacementsSetting =
+			this.settings.replacements && this.settings.replacements !== "none";
 		// Save original url
 		let originalUrl = this.url;
 		// Save original request method
@@ -635,10 +652,9 @@ class Book {
 			// Set to use replacements
 			this.resources.settings.replacements = replacementsSetting || "blobUrl";
 			// Create replacement urls
-			this.resources.replacements().
-				then(() => {
-					return this.resources.replaceCss();
-				});
+			this.resources.replacements().then(() => {
+				return this.resources.replaceCss();
+			});
 
 			this.storage.on("offline", () => {
 				// Remove url to use relative resolving for hrefs
@@ -653,7 +669,6 @@ class Book {
 				// Remove hook
 				this.spine.hooks.serialize.deregister(substituteResources);
 			});
-
 		});
 
 		return this.storage;
@@ -687,10 +702,9 @@ class Book {
 			section.output = this.resources.substitute(output, section.url);
 		});
 
-		return this.resources.replacements().
-			then(() => {
-				return this.resources.replaceCss();
-			});
+		return this.resources.replacements().then(() => {
+			return this.resources.replaceCss();
+		});
 	}
 
 	/**
@@ -719,7 +733,8 @@ class Book {
 	 * @return {string} key
 	 */
 	key(identifier) {
-		var ident = identifier || this.packaging.metadata.identifier || this.url.filename;
+		var ident =
+			identifier || this.packaging.metadata.identifier || this.url.filename;
 		return `epubjs:${EPUBJS_VERSION}:${ident}`;
 	}
 
@@ -759,7 +774,6 @@ class Book {
 		this.path = undefined;
 		this.archived = false;
 	}
-
 }
 
 //-- Enable binding events to book

@@ -4,7 +4,7 @@ import {
 	qsa,
 	querySelectorByType,
 	indexOfSorted,
-	locationOf
+	locationOf,
 } from "./utils/core";
 
 /**
@@ -28,7 +28,7 @@ class PageList {
 			this.pageList = this.parse(xml);
 		}
 
-		if(this.pageList && this.pageList.length) {
+		if (this.pageList && this.pageList.length) {
 			this.process(this.pageList);
 		}
 	}
@@ -41,12 +41,11 @@ class PageList {
 		var html = qs(xml, "html");
 		var ncx = qs(xml, "ncx");
 
-		if(html) {
+		if (html) {
 			return this.parseNav(xml);
-		} else if(ncx){
+		} else if (ncx) {
 			return this.parseNcx(xml);
 		}
-
 	}
 
 	/**
@@ -55,7 +54,7 @@ class PageList {
 	 * @param  {node} navHtml
 	 * @return {PageList.item[]} list
 	 */
-	parseNav(navHtml){
+	parseNav(navHtml) {
 		var navElement = querySelectorByType(navHtml, "nav", "page-list");
 		var navItems = navElement ? qsa(navElement, "li") : [];
 		var length = navItems.length;
@@ -63,7 +62,7 @@ class PageList {
 		var list = [];
 		var item;
 
-		if(!navItems || length === 0) return list;
+		if (!navItems || length === 0) return list;
 
 		for (i = 0; i < length; ++i) {
 			item = this.item(navItems[i]);
@@ -109,8 +108,8 @@ class PageList {
 		var page = parseInt(pageText, 10);
 
 		return {
-			"href": href,
-			"page": page,
+			href: href,
+			page: page,
 		};
 	}
 
@@ -120,30 +119,30 @@ class PageList {
 	 * @param  {node} item
 	 * @return {object} pageListItem
 	 */
-	item(item){
+	item(item) {
 		var content = qs(item, "a"),
-				href = content.getAttribute("href") || "",
-				text = content.textContent || "",
-				page = parseInt(text),
-				isCfi = href.indexOf("epubcfi"),
-				split,
-				packageUrl,
-				cfi;
+			href = content.getAttribute("href") || "",
+			text = content.textContent || "",
+			page = parseInt(text),
+			isCfi = href.indexOf("epubcfi"),
+			split,
+			packageUrl,
+			cfi;
 
-		if(isCfi != -1) {
+		if (isCfi != -1) {
 			split = href.split("#");
 			packageUrl = split[0];
 			cfi = split.length > 1 ? split[1] : false;
 			return {
-				"cfi" : cfi,
-				"href" : href,
-				"packageUrl" : packageUrl,
-				"page" : page
+				cfi: cfi,
+				href: href,
+				packageUrl: packageUrl,
+				page: page,
 			};
 		} else {
 			return {
-				"href" : href,
-				"page" : page
+				href: href,
+				page: page,
 			};
 		}
 	}
@@ -153,15 +152,15 @@ class PageList {
 	 * @private
 	 * @param  {array} pageList
 	 */
-	process(pageList){
-		pageList.forEach(function(item){
+	process(pageList) {
+		pageList.forEach(function (item) {
 			this.pages.push(item.page);
 			if (item.cfi) {
 				this.locations.push(item.cfi);
 			}
 		}, this);
 		this.firstPage = parseInt(this.pages[0]);
-		this.lastPage = parseInt(this.pages[this.pages.length-1]);
+		this.lastPage = parseInt(this.pages[this.pages.length - 1]);
 		this.totalPages = this.lastPage - this.firstPage;
 	}
 
@@ -170,11 +169,11 @@ class PageList {
 	 * @param  {string} cfi EpubCFI String
 	 * @return {number} page
 	 */
-	pageFromCfi(cfi){
+	pageFromCfi(cfi) {
 		var pg = -1;
 
 		// Check if the pageList has not been set yet
-		if(this.locations.length === 0) {
+		if (this.locations.length === 0) {
 			return -1;
 		}
 
@@ -183,7 +182,7 @@ class PageList {
 		// check if the cfi is in the location list
 		// var index = this.locations.indexOf(cfi);
 		var index = indexOfSorted(cfi, this.locations, this.epubcfi.compare);
-		if(index != -1) {
+		if (index != -1) {
 			pg = this.pages[index];
 		} else {
 			// Otherwise add it to the list of locations
@@ -191,14 +190,13 @@ class PageList {
 			//index = EPUBJS.core.insert(cfi, this.locations, this.epubcfi.compare);
 			index = locationOf(cfi, this.locations, this.epubcfi.compare);
 			// Get the page at the location just before the new one, or return the first
-			pg = index-1 >= 0 ? this.pages[index-1] : this.pages[0];
-			if(pg !== undefined) {
+			pg = index - 1 >= 0 ? this.pages[index - 1] : this.pages[0];
+			if (pg !== undefined) {
 				// Add the new page in so that the locations and page array match up
 				//this.pages.splice(index, 0, pg);
 			} else {
 				pg = -1;
 			}
-
 		}
 		return pg;
 	}
@@ -208,17 +206,17 @@ class PageList {
 	 * @param  {string | number} pg
 	 * @return {string} cfi
 	 */
-	cfiFromPage(pg){
+	cfiFromPage(pg) {
 		var cfi = -1;
 		// check that pg is an int
-		if(typeof pg != "number"){
+		if (typeof pg != "number") {
 			pg = parseInt(pg);
 		}
 
 		// check if the cfi is in the page list
 		// Pages could be unsorted.
 		var index = this.pages.indexOf(pg);
-		if(index != -1) {
+		if (index != -1) {
 			cfi = this.locations[index];
 		}
 		// TODO: handle pages not in the list
@@ -230,7 +228,7 @@ class PageList {
 	 * @param  {number} percent
 	 * @return {number} page
 	 */
-	pageFromPercentage(percent){
+	pageFromPercentage(percent) {
 		var pg = Math.round(this.totalPages * percent);
 		return pg;
 	}
@@ -240,7 +238,7 @@ class PageList {
 	 * @param  {number} pg the page
 	 * @return {number} percentage
 	 */
-	percentageFromPage(pg){
+	percentageFromPage(pg) {
 		var percentage = (pg - this.firstPage) / this.totalPages;
 		return Math.round(percentage * 1000) / 1000;
 	}
@@ -250,7 +248,7 @@ class PageList {
 	 * @param  {string} cfi EpubCFI String
 	 * @return {number} percentage
 	 */
-	percentageFromCfi(cfi){
+	percentageFromCfi(cfi) {
 		var pg = this.pageFromCfi(cfi);
 		var percentage = this.percentageFromPage(pg);
 		return percentage;

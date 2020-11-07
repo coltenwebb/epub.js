@@ -22,7 +22,7 @@ function ePub(url, options) {
 
 ePub.VERSION = EPUBJS_VERSION;
 
-if (typeof(global) !== "undefined") {
+if (typeof global !== "undefined") {
 	global.EPUBJS_VERSION = EPUBJS_VERSION;
 }
 

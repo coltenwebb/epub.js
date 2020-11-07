@@ -1,4 +1,4 @@
-import {qs, qsa } from "./utils/core";
+import { qs, qsa } from "./utils/core";
 
 /**
  * Open DisplayOptions Format Parser
@@ -23,14 +23,14 @@ class DisplayOptions {
 	 * @return {DisplayOptions} self
 	 */
 	parse(displayOptionsDocument) {
-		if(!displayOptionsDocument) {
+		if (!displayOptionsDocument) {
 			return this;
 		}
 
 		const displayOptionsNode = qs(displayOptionsDocument, "display_options");
-		if(!displayOptionsNode) {
+		if (!displayOptionsNode) {
 			return this;
-		} 
+		}
 
 		const options = qsa(displayOptionsNode, "option");
 		options.forEach((el) => {
@@ -41,18 +41,18 @@ class DisplayOptions {
 			}
 
 			switch (el.attributes.name.value) {
-			    case "interactive":
-			        this.interactive = value;
-			        break;
-			    case "fixed-layout":
-			        this.fixedLayout = value;
-			        break;
-			    case "open-to-spread":
-			        this.openToSpread = value;
-			        break;
-			    case "orientation-lock":
-			        this.orientationLock = value;
-			        break;
+				case "interactive":
+					this.interactive = value;
+					break;
+				case "fixed-layout":
+					this.fixedLayout = value;
+					break;
+				case "open-to-spread":
+					this.openToSpread = value;
+					break;
+				case "orientation-lock":
+					this.orientationLock = value;
+					break;
 			}
 		});
 

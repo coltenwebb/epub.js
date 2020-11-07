@@ -9,7 +9,7 @@ import path from "path-webpack";
  */
 class Url {
 	constructor(urlString, baseString) {
-		var absolute = (urlString.indexOf("://") > -1);
+		var absolute = urlString.indexOf("://") > -1;
 		var pathname = urlString;
 		var basePath;
 
@@ -22,17 +22,21 @@ class Url {
 		this.search = "";
 		this.base = baseString;
 
-		if (!absolute &&
-				baseString !== false &&
-				typeof(baseString) !== "string" &&
-				window && window.location) {
+		if (
+			!absolute &&
+			baseString !== false &&
+			typeof baseString !== "string" &&
+			window &&
+			window.location
+		) {
 			this.base = window.location.href;
 		}
 
 		// URL Polyfill doesn't throw an error if base is empty
 		if (absolute || this.base) {
 			try {
-				if (this.base) { // Safari doesn't like an undefined base
+				if (this.base) {
+					// Safari doesn't like an undefined base
 					this.Url = new URL(urlString, this.base);
 				} else {
 					this.Url = new URL(urlString);
@@ -44,7 +48,7 @@ class Url {
 				this.hash = this.Url.hash;
 				this.search = this.Url.search;
 
-				pathname = this.Url.pathname + (this.Url.search ? this.Url.search : '');
+				pathname = this.Url.pathname + (this.Url.search ? this.Url.search : "");
 			} catch (e) {
 				// Skip URL parsing
 				this.Url = undefined;
@@ -61,13 +65,12 @@ class Url {
 		this.directory = this.Path.directory;
 		this.filename = this.Path.filename;
 		this.extension = this.Path.extension;
-
 	}
 
 	/**
 	 * @returns {Path}
 	 */
-	path () {
+	path() {
 		return this.Path;
 	}
 
@@ -76,8 +79,8 @@ class Url {
 	 * @param {string} what
 	 * @returns {string} url
 	 */
-	resolve (what) {
-		var isAbsolute = (what.indexOf("://") > -1);
+	resolve(what) {
+		var isAbsolute = what.indexOf("://") > -1;
 		var fullpath;
 
 		if (isAbsolute) {
@@ -93,14 +96,14 @@ class Url {
 	 * @param {string} what
 	 * @returns {string} path
 	 */
-	relative (what) {
+	relative(what) {
 		return path.relative(what, this.directory);
 	}
 
 	/**
 	 * @returns {string}
 	 */
-	toString () {
+	toString() {
 		return this.href;
 	}
 }

@@ -3,13 +3,12 @@ import EpubCFI from "./epubcfi";
 import { EVENTS } from "./utils/constants";
 
 /**
-	* Handles managing adding & removing Annotations
-	* @param {Rendition} rendition
-	* @class
-	*/
+ * Handles managing adding & removing Annotations
+ * @param {Rendition} rendition
+ * @class
+ */
 class Annotations {
-
-	constructor (rendition) {
+	constructor(rendition) {
 		this.rendition = rendition;
 		this.highlights = [];
 		this.underlines = [];
@@ -31,7 +30,7 @@ class Annotations {
 	 * @param {object} styles CSS styles to assign to annotation
 	 * @returns {Annotation} annotation
 	 */
-	add (type, cfiRange, data, cb, className, styles) {
+	add(type, cfiRange, data, cb, className, styles) {
 		let hash = encodeURI(cfiRange + type);
 		let cfi = new EpubCFI(cfiRange);
 		let sectionIndex = cfi.spinePos;
@@ -42,7 +41,7 @@ class Annotations {
 			sectionIndex,
 			cb,
 			className,
-			styles
+			styles,
 		});
 
 		this._annotations[hash] = annotation;
@@ -55,7 +54,7 @@ class Annotations {
 
 		let views = this.rendition.views();
 
-		views.forEach( (view) => {
+		views.forEach((view) => {
 			if (annotation.sectionIndex === view.index) {
 				annotation.attach(view);
 			}
@@ -69,7 +68,7 @@ class Annotations {
 	 * @param {EpubCFI} cfiRange EpubCFI range the annotation is attached to
 	 * @param {string} type Type of annotation to add: "highlight", "underline", "mark"
 	 */
-	remove (cfiRange, type) {
+	remove(cfiRange, type) {
 		let hash = encodeURI(cfiRange + type);
 
 		if (hash in this._annotations) {
@@ -80,7 +79,7 @@ class Annotations {
 			}
 
 			let views = this.rendition.views();
-			views.forEach( (view) => {
+			views.forEach((view) => {
 				this._removeFromAnnotationBySectionIndex(annotation.sectionIndex, hash);
 				if (annotation.sectionIndex === view.index) {
 					annotation.detach(view);
@@ -95,18 +94,19 @@ class Annotations {
 	 * Remove an annotations by Section Index
 	 * @private
 	 */
-	_removeFromAnnotationBySectionIndex (sectionIndex, hash) {
-		this._annotationsBySectionIndex[sectionIndex] = this._annotationsAt(sectionIndex).filter(h => h !== hash);
+	_removeFromAnnotationBySectionIndex(sectionIndex, hash) {
+		this._annotationsBySectionIndex[sectionIndex] = this._annotationsAt(
+			sectionIndex
+		).filter((h) => h !== hash);
 	}
 
 	/**
 	 * Get annotations by Section Index
 	 * @private
 	 */
-	_annotationsAt (index) {
+	_annotationsAt(index) {
 		return this._annotationsBySectionIndex[index];
 	}
-
 
 	/**
 	 * Add a highlight to the store
@@ -116,7 +116,7 @@ class Annotations {
 	 * @param {string} className CSS class to assign to annotation
 	 * @param {object} styles CSS styles to assign to annotation
 	 */
-	highlight (cfiRange, data, cb, className, styles) {
+	highlight(cfiRange, data, cb, className, styles) {
 		return this.add("highlight", cfiRange, data, cb, className, styles);
 	}
 
@@ -128,7 +128,7 @@ class Annotations {
 	 * @param {string} className CSS class to assign to annotation
 	 * @param {object} styles CSS styles to assign to annotation
 	 */
-	underline (cfiRange, data, cb, className, styles) {
+	underline(cfiRange, data, cb, className, styles) {
 		return this.add("underline", cfiRange, data, cb, className, styles);
 	}
 
@@ -138,14 +138,14 @@ class Annotations {
 	 * @param {object} data Data to assign to annotation
 	 * @param {function} cb Callback after annotation is clicked
 	 */
-	mark (cfiRange, data, cb) {
+	mark(cfiRange, data, cb) {
 		return this.add("mark", cfiRange, data, cb);
 	}
 
 	/**
 	 * iterate over annotations in the store
 	 */
-	each () {
+	each() {
 		return this._annotations.forEach.apply(this._annotations, arguments);
 	}
 
@@ -154,7 +154,7 @@ class Annotations {
 	 * @param {View} view
 	 * @private
 	 */
-	inject (view) {
+	inject(view) {
 		let sectionIndex = view.index;
 		if (sectionIndex in this._annotationsBySectionIndex) {
 			let annotations = this._annotationsBySectionIndex[sectionIndex];
@@ -170,7 +170,7 @@ class Annotations {
 	 * @param {View} view
 	 * @private
 	 */
-	clear (view) {
+	clear(view) {
 		let sectionIndex = view.index;
 		if (sectionIndex in this._annotationsBySectionIndex) {
 			let annotations = this._annotationsBySectionIndex[sectionIndex];
@@ -185,18 +185,13 @@ class Annotations {
 	 * [Not Implemented] Show annotations
 	 * @TODO: needs implementation in View
 	 */
-	show () {
-
-	}
+	show() {}
 
 	/**
 	 * [Not Implemented] Hide annotations
 	 * @TODO: needs implementation in View
 	 */
-	hide () {
-
-	}
-
+	hide() {}
 }
 
 /**
@@ -213,16 +208,7 @@ class Annotations {
  * @returns {Annotation} annotation
  */
 class Annotation {
-
-	constructor ({
-		type,
-		cfiRange,
-		data,
-		sectionIndex,
-		cb,
-		className,
-		styles
-	}) {
+	constructor({ type, cfiRange, data, sectionIndex, cb, className, styles }) {
 		this.type = type;
 		this.cfiRange = cfiRange;
 		this.data = data;
@@ -237,7 +223,7 @@ class Annotation {
 	 * Update stored data
 	 * @param {object} data
 	 */
-	update (data) {
+	update(data) {
 		this.data = data;
 	}
 
@@ -245,8 +231,8 @@ class Annotation {
 	 * Add to a view
 	 * @param {View} view
 	 */
-	attach (view) {
-		let {cfiRange, data, type, mark, cb, className, styles} = this;
+	attach(view) {
+		let { cfiRange, data, type, mark, cb, className, styles } = this;
 		let result;
 
 		if (type === "highlight") {
@@ -266,8 +252,8 @@ class Annotation {
 	 * Remove from a view
 	 * @param {View} view
 	 */
-	detach (view) {
-		let {cfiRange, type} = this;
+	detach(view) {
+		let { cfiRange, type } = this;
 		let result;
 
 		if (view) {
@@ -289,13 +275,9 @@ class Annotation {
 	 * [Not Implemented] Get text of an annotation
 	 * @TODO: needs implementation in contents
 	 */
-	text () {
-
-	}
-
+	text() {}
 }
 
 EventEmitter(Annotation.prototype);
 
-
-export default Annotations
+export default Annotations;
