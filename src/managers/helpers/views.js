@@ -1,6 +1,9 @@
 class Views {
+	/**
+	 * @param {HTMLDivElement} container 
+	 */
 	constructor(container) {
-		this.container = container;
+		this.container = container; 
 		this._views = [];
 		this.length = 0;
 		this.hidden = false;

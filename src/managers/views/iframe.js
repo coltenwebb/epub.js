@@ -367,7 +367,7 @@ class IframeView {
 		requestAnimationFrame(() => {
 			let mark;
 			for (let m in this.marks) {
-				if (this.marks.hasOwnProperty(m)) {
+				if (Object.prototype.hasOwnProperty.call(this.marks, m)) {
 					mark = this.marks[m];
 					this.placeMark(mark.element, mark.range);
 				}

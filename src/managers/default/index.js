@@ -457,6 +457,7 @@ class DefaultViewManager {
 			this.settings.axis === "horizontal" &&
 			(!dir || dir === "ltr")
 		) {
+			// default for english books
 			this.scrollLeft = this.container.scrollLeft;
 
 			left =
@@ -894,8 +895,11 @@ class DefaultViewManager {
 		}
 
 		if (!this.settings.fullsize) {
-			if (x) this.container.scrollLeft += x * dir;
-			if (y) this.container.scrollTop += y;
+			this.container.scrollBy({
+				left: x * dir,
+				top: y * dir,
+				// behavior: 'smooth'
+			});
 		} else {
 			window.scrollBy(x * dir, y * dir);
 		}

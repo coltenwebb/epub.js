@@ -506,6 +506,7 @@ class Rendition {
 	 * Move the Rendition to a specific offset
 	 * Usually you would be better off calling display()
 	 * @param {object} offset
+	 * @returns {void}
 	 */
 	moveTo(offset) {
 		this.manager.moveTo(offset);
