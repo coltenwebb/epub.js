@@ -3,7 +3,8 @@
 		"browser": true,
 		"commonjs": true,
 		"es6": true,
-		"node": true
+		"node": true,
+		"mocha": true
 	},
 	"globals": {
 		"ePub": true,
@@ -16,6 +17,6 @@
 	"rules": {
 		"no-unused-vars": ["warn"],
 		"no-console": ["warn"],
-		"valid-jsdoc": ["warn"]
+		"valid-jsdoc": ["off"]
 	}
 }
