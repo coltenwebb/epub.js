@@ -5,16 +5,33 @@ import { sprint } from "./utils/core";
 import { replaceBase } from "./utils/replacements";
 import Request from "./utils/request";
 import { XMLDOMParser as XMLDOMSerializer } from "xmldom";
+import Spine from "./spine";
 
 /**
  * Represents a Section of the Book
  *
  * In most books this is equivelent to a Chapter
- * @param {object} item  The spine item representing the section
- * @param {object} hooks hooks for serialize and content
+ * @param item  The spine item representing the section
+ * @param hooks hooks for serialize and content
  */
 class Section {
-	constructor(item, hooks) {
+	idref: any;
+	linear: boolean;
+	properties: any;
+	index: any;
+	href: any;
+	url: any;
+	canonical: any;
+	next: any;
+	prev: any;
+	cfiBase: any;
+	hooks: any;
+	document: any;
+	contents: any;
+	output: any;
+	request: any;
+
+	constructor(item: Spine, hooks) {
 		this.idref = item.idref;
 		this.linear = item.linear === "yes";
 		this.properties = item.properties;

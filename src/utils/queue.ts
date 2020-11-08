@@ -6,11 +6,23 @@ import { defer, requestAnimationFrame } from "./core";
  * @param {scope} context what this will resolve to in the tasks
  */
 class Queue {
-	constructor(context) {
+	private _q: {
+		task?: Function;
+		args?: [];
+		deferred?: defer;
+		promise: Promise<Function>;
+	}[];
+	context: any;
+	tick: (callback: Function) => number;
+	workingOnPromise: boolean;
+	paused: boolean;
+	deferred?: defer;
+
+	constructor(context: any) {
 		this._q = [];
 		this.context = context;
 		this.tick = requestAnimationFrame;
-		this.running = false;
+		this.workingOnPromise = false;
 		this.paused = false;
 	}
 
@@ -18,7 +30,7 @@ class Queue {
 	 * Add an item to the queue
 	 * @return {Promise}
 	 */
-	enqueue() {
+	enqueue(_task: Function | Promise<Function>, taskArgs: []) {
 		var deferred, promise;
 		var queued;
 		var task = [].shift.call(arguments);
@@ -53,7 +65,7 @@ class Queue {
 		this._q.push(queued);
 
 		// Wait to start queue flush
-		if (this.paused == false && !this.running) {
+		if (this.paused === false && !this.workingOnPromise) {
 			// setTimeout(this.flush.bind(this), 0);
 			// this.tick.call(window, this.run.bind(this));
 			this.run();
@@ -67,11 +79,11 @@ class Queue {
 	 * @return {Promise}
 	 */
 	dequeue() {
-		var inwait, task, result;
+		var result;
 
 		if (this._q.length && !this.paused) {
-			inwait = this._q.shift();
-			task = inwait.task;
+			let inwait = this._q.shift();
+			let task = inwait.task;
 			if (task) {
 				// console.log(task)
 
@@ -80,12 +92,8 @@ class Queue {
 				if (result && typeof result["then"] === "function") {
 					// Task is a function that returns a promise
 					return result.then(
-						function () {
-							inwait.deferred.resolve.apply(this.context, arguments);
-						}.bind(this),
-						function () {
-							inwait.deferred.reject.apply(this.context, arguments);
-						}.bind(this)
+						inwait.deferred.resolve.bind(this.context),
+						inwait.deferred.reject.bind(this.context)
 					);
 				} else {
 					// Task resolves immediately
@@ -97,13 +105,16 @@ class Queue {
 				return inwait.promise;
 			}
 		} else {
-			inwait = new defer();
-			inwait.deferred.resolve();
-			return inwait.promise;
+			// if no tasks, do nothing silently
+			let d = new defer();
+			d.resolve();
+			return d.promise;
 		}
 	}
 
-	// Run All Immediately
+	/**
+	 * Run All Immediately
+	 */
 	dump() {
 		while (this._q.length) {
 			this.dequeue();
@@ -114,10 +125,10 @@ class Queue {
 	 * Run all tasks sequentially, at convince
 	 * @return {Promise}
 	 */
-	run() {
-		if (!this.running) {
-			this.running = true;
-			this.defered = new defer();
+	run(): Promise<any> {
+		if (!this.workingOnPromise) {
+			this.workingOnPromise = true;
+			this.deferred = new defer();
 		}
 
 		this.tick.call(window, () => {
@@ -128,8 +139,8 @@ class Queue {
 					}.bind(this)
 				);
 			} else {
-				this.defered.resolve();
-				this.running = undefined;
+				this.deferred.resolve();
+				this.workingOnPromise = false;
 			}
 		});
 
@@ -138,29 +149,29 @@ class Queue {
 			this.paused = false;
 		}
 
-		return this.defered.promise;
+		return this.deferred.promise;
 	}
 
-	/**
-	 * Flush all, as quickly as possible
-	 * @return {Promise}
-	 */
-	flush() {
-		if (this.running) {
-			return this.running;
-		}
+	// /**
+	//  * Flush all, as quickly as possible
+	//  * @return {Promise}
+	//  */
+	// flush(): Promise<any> {
+	// 	if (this.running) {
+	// 		return this.deferred.promise;
+	// 	}
 
-		if (this._q.length) {
-			this.running = this.dequeue().then(
-				function () {
-					this.running = undefined;
-					return this.flush();
-				}.bind(this)
-			);
+	// 	if (this._q.length) {
+	// 		this.running = this.dequeue().then(
+	// 			function () {
+	// 				this.running = undefined;
+	// 				return this.flush();
+	// 			}.bind(this)
+	// 		);
 
-			return this.running;
-		}
-	}
+	// 		return this.running;
+	// 	}
+	// }
 
 	/**
 	 * Clear all items in wait
@@ -189,42 +200,42 @@ class Queue {
 	 */
 	stop() {
 		this._q = [];
-		this.running = false;
+		this.workingOnPromise = false;
 		this.paused = true;
 	}
 }
 
-/**
- * Create a new task from a callback
- * @class
- * @private
- * @param {function} task
- * @param {array} args
- * @param {scope} context
- * @return {function} task
- */
-class Task {
-	constructor(task, args, context) {
-		return function () {
-			var toApply = arguments || [];
+// /**
+//  * Create a new task from a callback
+//  * @class
+//  * @private
+//  * @param {function} task
+//  * @param {array} args
+//  * @param {scope} context
+//  * @return {function} task
+//  */
+// class Task {
+// 	constructor(task, args, context) {
+// 		return function () {
+// 			var toApply = arguments || [];
 
-			return new Promise((resolve, reject) => {
-				var callback = function (value, err) {
-					if (!value && err) {
-						reject(err);
-					} else {
-						resolve(value);
-					}
-				};
-				// Add the callback to the arguments list
-				toApply.push(callback);
+// 			return new Promise((resolve, reject) => {
+// 				var callback = function (value, err) {
+// 					if (!value && err) {
+// 						reject(err);
+// 					} else {
+// 						resolve(value);
+// 					}
+// 				};
+// 				// Add the callback to the arguments list
+// 				toApply.push(callback);
 
-				// Apply all arguments to the functions
-				task.apply(context || this, toApply);
-			});
-		};
-	}
-}
+// 				// Apply all arguments to the functions
+// 				task.apply(context || this, toApply);
+// 			});
+// 		};
+// 	}
+// }
 
 export default Queue;
-export { Task };
+// export { Task };

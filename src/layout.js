@@ -99,7 +99,7 @@ class Layout {
 	 * Calculate the dimensions of the pagination
 	 * @param  {number} _width  width of the rendering
 	 * @param  {number} _height height of the rendering
-	 * @param  {number} _gap    width of the gap between columns
+	 * @param  {number} [_gap]    width of the gap between columns
 	 */
 	calculate(_width, _height, _gap) {
 		var divisor = 1;

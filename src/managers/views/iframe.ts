@@ -13,11 +13,12 @@ import EpubCFI from "../../epubcfi";
 import Contents from "../../contents";
 import { EVENTS } from "../../utils/constants";
 import { Pane, Highlight, Underline } from "marks-pane";
+import Section from "../../section";
 
 class IframeView {
 	settings: any;
 	id: string;
-	section: any;
+	section: Section;
 	index: any;
 	element: HTMLDivElement;
 	added: boolean;
@@ -31,11 +32,11 @@ class IframeView {
 	highlights: {};
 	underlines: {};
 	marks: {};
-	iframe: any;
+	iframe: HTMLIFrameElement;
 	resizing: boolean;
 	_width: number;
 	_height: number;
-	elementBounds: { width: number; height: number; };
+	elementBounds: { width: number; height: number };
 	supportsSrcdoc: boolean;
 	sectionRender: any;
 	_textWidth: any;
@@ -50,12 +51,12 @@ class IframeView {
 	prevBounds: any;
 	blobUrl: string;
 	document: any;
-	window: any;
+	window: Window;
 	rendering: boolean;
 	writingMode: any;
 	stopExpanding: boolean;
-	
-	constructor(section, options) {
+
+	constructor(section: Section, options) {
 		this.settings = extend(
 			{
 				ignoreClass: "",
@@ -155,7 +156,7 @@ class IframeView {
 
 		this.added = true;
 
-		this.elementBounds = bounds(this.element);
+		this.elementBounds = bounds(this.element); // bounds will be zero here
 
 		// if(width || height){
 		//   this.resize(width, height);
@@ -378,6 +379,12 @@ class IframeView {
 		this._expanding = false;
 	}
 
+	/**
+	 * Can be called more than once when adding the view, as the browser
+	 * resolves the content.
+	 * @param width
+	 * @param height
+	 */
 	reframe(width, height) {
 		var size;
 
@@ -423,6 +430,7 @@ class IframeView {
 
 		this.prevBounds = size;
 
+		// can be incorrect on the first render
 		this.elementBounds = bounds(this.element);
 	}
 	emit(RESIZED: string, size: any) {

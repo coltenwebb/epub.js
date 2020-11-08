@@ -1,3 +1,4 @@
+import Section from "../../section";
 import IframeView from "../views/iframe";
 
 class Views {
@@ -5,9 +6,9 @@ class Views {
 	private _views: IframeView[];
 	length: number;
 	hidden: boolean;
-	
+
 	constructor(container: HTMLDivElement) {
-		this.container = container; 
+		this.container = container;
 		this._views = [];
 		this.length = 0;
 		this.hidden = false;
@@ -25,7 +26,7 @@ class Views {
 		return this._views[this._views.length - 1];
 	}
 
-	indexOf(view: any) {
+	indexOf(view: IframeView) {
 		return this._views.indexOf(view);
 	}
 
@@ -85,7 +86,7 @@ class Views {
 		this.length--;
 	}
 
-	destroy(view: { displayed: any; destroy: () => void; element: any; }) {
+	private destroy(view: IframeView) {
 		if (view.displayed) {
 			view.destroy();
 		}
@@ -102,28 +103,26 @@ class Views {
 		return this._views.forEach.apply(this._views, arguments);
 	}
 
+	/**
+	 * Remove all views
+	 */
 	clear() {
-		// Remove all views
-		var view: any;
-		var len = this.length;
-
-		if (!this.length) return;
-
-		for (var i = 0; i < len; i++) {
-			view = this._views[i];
-			this.destroy(view);
+		for (var i = 0; i < this.length; i++) {
+			this.destroy(this._views[i]);
 		}
 
 		this._views = [];
 		this.length = 0;
 	}
 
-	find(section: { index: any; }) {
-		var view: { displayed: any; section: { index: any; }; };
-		var len = this.length;
-
-		for (var i = 0; i < len; i++) {
-			view = this._views[i];
+	/**
+	 * Returns the view corresponding to the given section if the view is
+	 * displayed.
+	 * @param section the section to look for
+	 */
+	find(section: Section) {
+		for (var i = 0; i < this.length; i++) {
+			let view = this._views[i];
 			if (view.displayed && view.section.index == section.index) {
 				return view;
 			}
@@ -132,7 +131,7 @@ class Views {
 
 	displayed() {
 		var displayed = [];
-		var view: { displayed: any; };
+		var view: IframeView;
 		var len = this.length;
 
 		for (var i = 0; i < len; i++) {
@@ -145,7 +144,7 @@ class Views {
 	}
 
 	show() {
-		var view: { displayed: any; show: () => void; };
+		var view: IframeView;
 		var len = this.length;
 
 		for (var i = 0; i < len; i++) {
@@ -158,13 +157,9 @@ class Views {
 	}
 
 	hide() {
-		var view: { displayed: any; hide: () => void; };
-		var len = this.length;
-
-		for (var i = 0; i < len; i++) {
-			view = this._views[i];
-			if (view.displayed) {
-				view.hide();
+		for (var i = 0; i < this.length; i++) {
+			if (this._views[i].displayed) {
+				this._views[i].hide();
 			}
 		}
 		this.hidden = true;

@@ -1,10 +1,10 @@
 {
 	"configurations": [
 		{
-			"name": "Launch Chrome",
+			"name": "Launch Spreads",
 			"request": "launch",
 			"type": "pwa-chrome",
-			"url": "http://localhost:8080",
+			"url": "http://localhost:8080/examples/spreads.html",
 			"webRoot": "${workspaceFolder}",
 			"sourceMaps": true,
 			"trace": true

@@ -34,6 +34,16 @@ class Spine {
 		this.spineNodeIndex = undefined;
 		this.baseUrl = undefined;
 		this.length = undefined;
+		this.idref = undefined;
+		this.linear = undefined;
+		this.properties = undefined;
+		this.index = undefined;
+		this.href = undefined;
+		this.url = undefined;
+		this.canonical = undefined;
+		this.next = undefined;
+		this.prev = undefined;
+		this.cfiBase = undefined;
 	}
 
 	/**

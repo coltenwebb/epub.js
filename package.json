@@ -32,6 +32,10 @@
 		"@babel/preset-env": "^7.12.1",
 		"@babel/preset-typescript": "^7.12.1",
 		"@babel/runtime": "^7.12.5",
+		"@types/event-emitter": "^0.3.3",
+		"@types/localforage": "0.0.34",
+		"@types/lodash": "^4.14.165",
+		"@types/xmldom": "^0.1.30",
 		"babel-loader": "^8.1.0",
 		"documentation": "^13.1.0",
 		"eslint": "^7.13.0",
@@ -57,7 +61,6 @@
 		"webpack-dev-server": "^3.11.0"
 	},
 	"dependencies": {
-		"@types/localforage": "0.0.34",
 		"core-js": "^3.7.0",
 		"event-emitter": "^0.3.5",
 		"jszip": "^3.5.0",
