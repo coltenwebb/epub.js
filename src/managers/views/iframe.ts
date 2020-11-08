@@ -15,6 +15,46 @@ import { EVENTS } from "../../utils/constants";
 import { Pane, Highlight, Underline } from "marks-pane";
 
 class IframeView {
+	settings: any;
+	id: string;
+	section: any;
+	index: any;
+	element: HTMLDivElement;
+	added: boolean;
+	displayed: boolean;
+	rendered: boolean;
+	fixedWidth: number;
+	fixedHeight: number;
+	epubcfi: EpubCFI;
+	layout: any;
+	pane: any;
+	highlights: {};
+	underlines: {};
+	marks: {};
+	iframe: any;
+	resizing: boolean;
+	_width: number;
+	_height: number;
+	elementBounds: { width: number; height: number; };
+	supportsSrcdoc: boolean;
+	sectionRender: any;
+	_textWidth: any;
+	_contentWidth: any;
+	_textHeight: any;
+	_contentHeight: any;
+	_needsReframe: boolean;
+	lockedWidth: number;
+	lockedHeight: number;
+	_expanding: boolean;
+	contents: any;
+	prevBounds: any;
+	blobUrl: string;
+	document: any;
+	window: any;
+	rendering: boolean;
+	writingMode: any;
+	stopExpanding: boolean;
+	
 	constructor(section, options) {
 		this.settings = extend(
 			{
@@ -137,8 +177,11 @@ class IframeView {
 
 		return this.iframe;
 	}
+	createContainer(): any {
+		throw new Error("Method not implemented.");
+	}
 
-	render(request, show) {
+	render(request) {
 		// view.onLayout = this.layout.format.bind(this.layout);
 		this.create();
 
@@ -229,7 +272,7 @@ class IframeView {
 	}
 
 	// Determine locks base on settings
-	size(_width, _height) {
+	size(_width?: number, _height?: number) {
 		var width = _width || this.settings.width;
 		var height = _height || this.settings.height;
 
@@ -279,7 +322,7 @@ class IframeView {
 	}
 
 	// Resize a single axis based on content dimensions
-	expand(force) {
+	expand() {
 		var width = this.lockedWidth;
 		var height = this.lockedHeight;
 		var columns;
@@ -381,6 +424,9 @@ class IframeView {
 		this.prevBounds = size;
 
 		this.elementBounds = bounds(this.element);
+	}
+	emit(RESIZED: string, size: any) {
+		throw new Error("Method not implemented.");
 	}
 
 	load(contents) {
@@ -503,7 +549,7 @@ class IframeView {
 		//TODO: Add content listeners for expanding
 	}
 
-	removeListeners(layoutFunc) {
+	removeListeners(layoutFunc?) {
 		//TODO: remove content listeners for expanding
 	}
 

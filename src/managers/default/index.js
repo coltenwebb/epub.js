@@ -530,7 +530,7 @@ class DefaultViewManager {
 					}
 				)
 				.then(
-					function () {
+					() => {
 						// Reset position to start for scrolled-doc vertical-rl in default mode
 						if (
 							!this.isPaginated &&
@@ -541,7 +541,7 @@ class DefaultViewManager {
 							this.scrollTo(this.container.scrollWidth, 0, true);
 						}
 						this.views.show();
-					}.bind(this)
+					}
 				);
 		}
 	}

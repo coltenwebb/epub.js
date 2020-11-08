@@ -1,8 +1,12 @@
+import IframeView from "../views/iframe";
+
 class Views {
-	/**
-	 * @param {HTMLDivElement} container 
-	 */
-	constructor(container) {
+	container: HTMLDivElement;
+	private _views: IframeView[];
+	length: number;
+	hidden: boolean;
+	
+	constructor(container: HTMLDivElement) {
 		this.container = container; 
 		this._views = [];
 		this.length = 0;
@@ -21,7 +25,7 @@ class Views {
 		return this._views[this._views.length - 1];
 	}
 
-	indexOf(view) {
+	indexOf(view: any) {
 		return this._views.indexOf(view);
 	}
 
@@ -29,11 +33,11 @@ class Views {
 		return this._views.slice.apply(this._views, arguments);
 	}
 
-	get(i) {
+	get(i: string | number) {
 		return this._views[i];
 	}
 
-	append(view) {
+	append(view: IframeView) {
 		this._views.push(view);
 		if (this.container) {
 			this.container.appendChild(view.element);
@@ -42,7 +46,7 @@ class Views {
 		return view;
 	}
 
-	prepend(view) {
+	prepend(view: IframeView) {
 		this._views.unshift(view);
 		if (this.container) {
 			this.container.insertBefore(view.element, this.container.firstChild);
@@ -51,7 +55,7 @@ class Views {
 		return view;
 	}
 
-	insert(view, index) {
+	insert(view: IframeView, index: number) {
 		this._views.splice(index, 0, view);
 
 		if (this.container) {
@@ -69,7 +73,7 @@ class Views {
 		return view;
 	}
 
-	remove(view) {
+	remove(view: any) {
 		var index = this._views.indexOf(view);
 
 		if (index > -1) {
@@ -81,7 +85,7 @@ class Views {
 		this.length--;
 	}
 
-	destroy(view) {
+	destroy(view: { displayed: any; destroy: () => void; element: any; }) {
 		if (view.displayed) {
 			view.destroy();
 		}
@@ -100,7 +104,7 @@ class Views {
 
 	clear() {
 		// Remove all views
-		var view;
+		var view: any;
 		var len = this.length;
 
 		if (!this.length) return;
@@ -114,8 +118,8 @@ class Views {
 		this.length = 0;
 	}
 
-	find(section) {
-		var view;
+	find(section: { index: any; }) {
+		var view: { displayed: any; section: { index: any; }; };
 		var len = this.length;
 
 		for (var i = 0; i < len; i++) {
@@ -128,7 +132,7 @@ class Views {
 
 	displayed() {
 		var displayed = [];
-		var view;
+		var view: { displayed: any; };
 		var len = this.length;
 
 		for (var i = 0; i < len; i++) {
@@ -141,7 +145,7 @@ class Views {
 	}
 
 	show() {
-		var view;
+		var view: { displayed: any; show: () => void; };
 		var len = this.length;
 
 		for (var i = 0; i < len; i++) {
@@ -154,7 +158,7 @@ class Views {
 	}
 
 	hide() {
-		var view;
+		var view: { displayed: any; hide: () => void; };
 		var len = this.length;
 
 		for (var i = 0; i < len; i++) {
